@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetMatch - La Red Social y Emparejamiento para Mascotas en Ecuador</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Configuración para PWA / App Móvil -->
+    <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-paw text-rose-500 text-2xl"></i>
+                <span class="text-xl font-bold tracking-tight text-slate-900">Pet<span class="text-rose-500">Match</span></span>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-slate-600">
+                <a href="#inicio" class="hover:text-rose-500 transition">Inicio</a>
+                <a href="#buscar" class="hover:text-rose-500 transition">Explorar Perfiles</a>
+                <a href="#invita" class="hover:text-rose-500 transition font-semibold text-rose-500">¡Invita y Gana!</a>
+            </nav>
+            <button onclick="abrirModalRegistro()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-sm transition">
+                <i class="fa-solid fa-heart mr-1"></i> Publicar Mascota (Gratis)
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="bg-gradient-to-br from-rose-500 to-pink-600 text-white py-16 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">Comunidad Verificada en Ecuador 🇪🇨</span>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4">El Match Ideal para tu Perro o Gato</h1>
+            <p class="text-lg text-rose-100 mb-8">Publica gratis el perfil de tu mascota por 2 meses, busca coincidencias en tu ciudad o barrio y concreta citas seguras cerca de ti.</p>
+            <div class="flex justify-center gap-4 flex-wrap">
+                <a href="#buscar" class="bg-white text-rose-600 font-semibold px-6 py-3 rounded-full shadow hover:bg-slate-100 transition">Buscar Pareja Cerca</a>
+                <button onclick="abrirModalRegistro()" class="bg-rose-700 text-white font-semibold px-6 py-3 rounded-full shadow hover:bg-rose-800 transition">Registrar mi Mascota</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Banner de Invitación Viral ("Invita a un amigo") -->
+    <section id="invita" class="max-w-7xl mx-auto px-4 mt-8">
+        <div class="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-100 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between shadow-sm">
+            <div class="mb-4 md:mb-0">
+                <h3 class="text-lg font-bold text-rose-900 flex items-center"><i class="fa-solid fa-gift mr-2 text-rose-500"></i> ¡Invita a un amigo y gana beneficios!</h3>
+                <p class="text-xs text-slate-600 mt-1">Comparte tu enlace único. Si 2 amigos publican su mascota, te regalamos **1 mes gratis** de chat ilimitado.</p>
+            </div>
+            <div class="flex items-center space-x-2 w-full md:w-auto">
+                <input type="text" id="inputReferido" readonly value="https://petmatch.ec/?ref=tu_usuario" class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-600 w-full md:w-64 focus:outline-none">
+                <button onclick="copiarEnlaceReferido()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition shadow-sm">
+                    <i class="fa-solid fa-copy mr-1"></i> Copiar Enlace
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filtros de Búsqueda Avanzada y Proximidad -->
+    <section id="buscar" class="max-w-7xl mx-auto px-4 py-8">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
+            <h2 class="text-base font-bold text-slate-900 mb-4"><i class="fa-solid fa-filter text-rose-500 mr-2"></i>Filtrar por Especie y Ubicación en Ecuador</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Especie</label>
+                    <select id="filtroEspecie" onchange="filtrarMascotas()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <option value="">Todas las Especies</option>
+                        <option value="Perro">Perros</option>
+                        <option value="Gato">Gatos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Sexo</label>
+                    <select id="filtroSexo" onchange="filtrarMascotas()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <option value="">Cualquier Sexo</option>
+                        <option value="Macho">Macho</option>
+                        <option value="Hembra">Hembra</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Ciudad</label>
+                    <select id="filtroCiudad" onchange="filtrarMascotas()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <option value="">Todas las Ciudades</option>
+                        <option value="Quito">Quito</option>
+                        <option value="Guayaquil">Guayaquil</option>
+                        <option value="Cuenca">Cuenca</option>
+                        <option value="Santo Domingo">Santo Domingo</option>
+                        <option value="Machala">Machala</option>
+                        <option value="Manta">Manta</option>
+                        <option value="Portoviejo">Portoviejo</option>
+                        <option value="Ambato">Ambato</option>
+                        <option value="Loja">Loja</option>
+                        <option value="Ibarra">Ibarra</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Barrio / Sector</label>
+                    <input type="text" id="filtroBarrio" oninput="filtrarMascotas()" placeholder="Ej. La Carolina, Urdesa..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid de Perfiles de Mascotas -->
+        <div id="gridMascotas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cargado por JS -->
+        </div>
+    </section>
+
+    <!-- Modal de Registro Gratuito -->
+    <div id="modalRegistro" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 relative shadow-xl max-h-[90vh] overflow-y-auto">
+            <button onclick="cerrarModalRegistro()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-xl font-bold mb-1 text-slate-900">Publica tu Mascota Gratis</h3>
+            <p class="text-xs text-slate-500 mb-4">Crea su perfil gratuito con duración de 2 meses y encuentra parejas compatibles en tu ciudad.</p>
+            
+            <form onsubmit="registrarMascota(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Nombre de la Mascota</label>
+                    <input type="text" id="regNombre" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Especie</label>
+                        <select id="regEspecie" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                            <option value="Perro">Perro</option>
+                            <option value="Gato">Gato</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Sexo</label>
+                        <select id="regSexo" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                            <option value="Macho">Macho</option>
+                            <option value="Hembra">Hembra</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Raza</label>
+                    <input type="text" id="regRaza" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none" placeholder="Ej. Poodle / Criollo">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Ciudad</label>
+                        <select id="regCiudad" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                            <option value="">Selecciona ciudad</option>
+                            <option value="Quito">Quito</option>
+                            <option value="Guayaquil">Guayaquil</option>
+                            <option value="Cuenca">Cuenca</option>
+                            <option value="Santo Domingo">Santo Domingo</option>
+                            <option value="Machala">Machala</option>
+                            <option value="Manta">Manta</option>
+                            <option value="Portoviejo">Portoviejo</option>
+                            <option value="Ambato">Ambato</option>
+                            <option value="Loja">Loja</option>
+                            <option value="Ibarra">Ibarra</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Barrio / Sector</label>
+                        <input type="text" id="regBarrio" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none" placeholder="Ej. La Mariscal">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">¿Qué busca en su pareja ideal?</label>
+                    <textarea id="regBusca" rows="2" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none" placeholder="Ej. Busca pareja de temperamento tranquilo..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 rounded-lg transition shadow-sm mt-2">
+                    ¡Publicar Perfil Gratis (2 meses)!
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Membresía para Contactar ($5 Anual) con Sellos de Confianza y Causa Social -->
+    <div id="modalContacto" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 relative shadow-xl text-center">
+            <button onclick="cerrarModalContacto()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="w-12 h-12 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fa-solid fa-shield-heart"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2 text-slate-900">¡Has encontrado una coincidencia!</h3>
+            <p class="text-sm text-slate-600 mb-4" id="textoMascotaDestino">Para enviar mensajes directos, ver el teléfono del dueño y coordinar la cita cercana, activa tu membresía anual.</p>
+            
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4 text-left">
+                <div class="flex justify-between items-center mb-2 text-sm font-semibold">
+                    <span class="text-slate-700">Membresía Anual de Contacto</span>
+                    <span class="text-rose-600 text-lg font-bold">$5.00 / año</span>
+                </div>
+                <ul class="text-xs text-slate-500 space-y-1.5">
+                    <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Contacto ilimitado con dueños cercanos</li>
+                    <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Coordinación directa de citas seguras</li>
+                    <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> **El 10% se dona a fundaciones de rescate animal** 🐾</li>
+                </ul>
+            </div>
+
+            <!-- Sellos de Seguridad / Pasarelas de Pago -->
+            <div class="flex justify-center items-center space-x-4 mb-6 text-slate-400 text-xl">
+                <i class="fab fa-cc-visa" title="Visa"></i>
+                <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                <i class="fab fa-paypal" title="PayPal"></i>
+                <i class="fa-solid fa-lock text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded"> Pago 100% Seguro SSL</i>
+            </div>
+
+            <button onclick="procesarPagoMembresia()" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-xl transition shadow-sm mb-2">
+                Activar por $5.00 / Año
+            </button>
+            <p class="text-[10px] text-slate-400">Garantía de satisfacción de 7 días o devolución de tu dinero.</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Lógica -->
+    <script>
+        const mascotasData = [
+            { id: 1, nombre: "Max", especie: "Perro", raza: "Golden Retriever", sexo: "Macho", edad: "2 años", ciudad: "Quito", barrio: "La Carolina", busca: "Busca compañera juguetona y de tamaño mediano.", foto: "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=500&q=80", esPremium: false },
+            { id: 2, nombre: "Luna", especie: "Gato", raza: "Siamés", sexo: "Hembra", edad: "1 año y medio", ciudad: "Guayaquil", barrio: "Urdesa", busca: "Busca gato tranquilo para socializar.", foto: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=500&q=80", esPremium: true },
+            { id: 3, nombre: "Rocky", especie: "Perro", raza: "Bulldog Francés", sexo: "Macho", edad: "3 años", ciudad: "Cuenca", barrio: "El Vergel", busca: "Busca pareja de su misma raza.", foto: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=500&q=80", esPremium: false },
+            { id: 4, nombre: "Mila", especie: "Gato", raza: "Maine Coon", sexo: "Hembra", edad: "2 años", ciudad: "Manta", barrio: "Tarqui", busca: "Busca compañero activo y amigable.", foto: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&w=500&q=80", esPremium: false }
+        ];
+
+        let mascotaSeleccionada = "";
+
+        function renderMascotas(data) {
+            const grid = document.getElementById('gridMascotas');
+            grid.innerHTML = '';
+            
+            if(data.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-100">No se encontraron mascotas en esta ubicación o con los filtros seleccionados.</div>`;
+                return;
+            }
+
+            data.forEach(m => {
+                const badgePremium = m.esPremium 
+                    ? `<span class="absolute top-3 left-3 bg-amber-400 text-slate-900 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-crown mr-1"></i> Premium</span>`
+                    : '';
+
+                // Enlace directo para compartir en WhatsApp
+                const textoWhatsApp = encodeURIComponent(`¡Mira este perfil en PetMatch! ${m.nombre} (${m.especie} ${m.raza}) busca pareja en ${m.barrio}, ${m.ciudad}. 🐾 Entra aquí: https://petmatch.ec`);
+                const linkWhatsApp = `https://api.whatsapp.com/send?text=${textoWhatsApp}`;
+
+                grid.innerHTML += `
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition flex flex-col justify-between">
+                        <div>
+                            <div class="h-48 overflow-hidden relative">
+                                <img src="${m.foto}" alt="${m.nombre}" class="w-full h-full object-cover">
+                                ${badgePremium}
+                                <span class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                                    ${m.especie}
+                                </span>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex justify-between items-start mb-1">
+                                    <h3 class="text-lg font-bold text-slate-900">${m.nombre}</h3>
+                                    <span class="text-xs font-semibold px-2 py-0.5 bg-rose-50 text-rose-600 rounded-full">${m.sexo}</span>
+                                </div>
+                                <p class="text-sm font-medium text-slate-700 mb-2">${m.raza} • ${m.edad}</p>
+                                <p class="text-xs text-rose-600 font-semibold mb-3">
+                                    <i class="fa-solid fa-location-dot mr-1"></i> ${m.barrio}, ${m.ciudad}
+                                </p>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs text-slate-600 mb-4">
+                                    <span class="font-bold text-slate-700 block mb-0.5">Qué busca:</span> "${m.busca}"
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-5 pt-0 flex gap-2">
+                            <button onclick="abrirModalContacto('${m.nombre}', '${m.barrio}')" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-medium py-2 rounded-xl text-sm transition shadow-sm">
+                                <i class="fa-solid fa-comments mr-1"></i> Contactar
+                            </button>
+                            <a href="${linkWhatsApp}" target="_blank" title="Compartir en WhatsApp" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl text-sm transition flex items-center justify-center shadow-sm">
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filtrarMascotas() {
+            const especie = document.getElementById('filtroEspecie').value;
+            const sexo = document.getElementById('filtroSexo').value;
+            const ciudad = document.getElementById('filtroCiudad').value;
+            const barrio = document.getElementById('filtroBarrio').value.toLowerCase().trim();
+
+            let filtradas = mascotasData;
+            if(especie) filtradas = filtradas.filter(m => m.especie === especie);
+            if(sexo) filtradas = filtradas.filter(m => m.sexo === sexo);
+            if(ciudad) filtradas = filtradas.filter(m => m.ciudad === ciudad);
+            if(barrio) filtradas = filtradas.filter(m => m.barrio.toLowerCase().includes(barrio));
+
+            renderMascotas(filtradas);
+        }
+
+        function abrirModalRegistro() {
+            document.getElementById('modalRegistro').classList.remove('hidden');
+            document.getElementById('modalRegistro').classList.add('flex');
+        }
+
+        function cerrarModalRegistro() {
+            document.getElementById('modalRegistro').classList.remove('flex');
+            document.getElementById('modalRegistro').classList.add('hidden');
+        }
+
+        function registrarMascota(e) {
+            e.preventDefault();
+            
+            const nuevaMascota = {
+                id: Date.now(),
+                nombre: document.getElementById('regNombre').value,
+                especie: document.getElementById('regEspecie').value,
+                sexo: document.getElementById('regSexo').value,
+                raza: document.getElementById('regRaza').value,
+                ciudad: document.getElementById('regCiudad').value,
+                barrio: document.getElementById('regBarrio').value,
+                busca: document.getElementById('regBusca').value || "Busca pareja compatible.",
+                foto: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=500&q=80",
+                esPremium: false
+            };
+
+            mascotasData.unshift(nuevaMascota);
+            renderMascotas(mascotasData);
+            cerrarModalRegistro();
+            alert('¡Mascota registrada exitosamente de forma gratuita por 2 meses!');
+        }
+
+        function abrirModalContacto(nombreMascota, barrioMascota) {
+            mascotaSeleccionada = nombreMascota;
+            document.getElementById('textoMascotaDestino').innerText = `Para chatear con el dueño de ${nombreMascota}, ver su teléfono y coordinar la cita cercana, activa tu membresía anual.`;
+            document.getElementById('modalContacto').classList.remove('hidden');
+            document.getElementById('modalContacto').classList.add('flex');
+        }
+
+        function cerrarModalContacto() {
+            document.getElementById('modalContacto').classList.remove('flex');
+            document.getElementById('modalContacto').classList.add('hidden');
+        }
+
+        function procesarPagoMembresia() {
+            alert(`¡Redirigiendo a la pasarela segura por $5.00 para conectar con ${mascotaSeleccionada}! (Aquí conectarías Stripe o PayPal).`);
+            cerrarModalContacto();
+        }
+
+        function copiarEnlaceReferido() {
+            const input = document.getElementById('inputReferido');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+            alert('¡Enlace de referido copiado al portapapeles! Compártelo con tus amigos para ganar meses gratis.');
+        }
+
+        // Inicializar grid al cargar la página
+        renderMascotas(mascotasData);
+    </script>
+</body>
+</html>
