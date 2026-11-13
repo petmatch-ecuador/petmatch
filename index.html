@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetMatch - Comunidad de Cruza Responsable y Encuentro de Mascotas</title>
+    <meta name="description" content="Plataforma comunitaria para encontrar pareja, novio o novia para tu perrito o gato, cruza responsable y contacto directo protegido.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Librería oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --primary: #e63946;
+            --secondary: #ff6b6b;
+            --dark: #2d3748;
+            --light: #fdf2f4;
+            --gray: #e2e8f0;
+            --success: #28a745;
+            --shadow: 0 10px 25px rgba(0,0,0,0.06);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8fafc; color: var(--dark); scroll-behavior: smooth; }
+        
+        /* Navbar */
+        header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; text-decoration: none; cursor: pointer; }
+        .nav-links { display: flex; gap: 1.2rem; list-style: none; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; transition: color 0.3s; cursor: pointer; font-size: 0.95rem; }
+        .nav-links a:hover { color: var(--primary); }
+        .btn-primary { background: var(--primary); color: white; padding: 0.6rem 1.2rem; border-radius: 50px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 15px rgba(230,57,70,0.3); transition: transform 0.2s; display: inline-block; cursor: pointer; border: none; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .user-status { font-size: 0.85rem; color: #555; background: #edf2f7; padding: 0.3rem 0.8rem; border-radius: 20px; }
+
+        /* Hero Section */
+        .hero { 
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(45, 55, 72, 0.7)), url('https://images.unsplash.com/photo-1534361960057-19889db9621e?w=1200') no-repeat center center/cover; 
+            color: white; 
+            padding: 5rem 2rem; 
+            text-align: center; 
+        }
+        .hero-content { max-width: 800px; margin: 0 auto; }
+        .badge { background: rgba(230,57,70,0.9); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 1rem; font-weight: bold; color: white; }
+        .hero h1 { font-size: 2.8rem; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .hero p { font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.95; line-height: 1.6; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; }
+        .btn-secondary { background: white; color: var(--primary); padding: 0.8rem 1.8rem; border-radius: 50px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: inline-block; cursor: pointer; border: none; transition: transform 0.2s; }
+        .btn-secondary:hover { transform: scale(1.05); }
+
+        /* Banner de Contingencia para Expansión Internacional */
+        #expansionAlert { display: none; background: linear-gradient(135deg, #3182ce, #2b6cb0); color: white; text-align: center; padding: 1rem; font-size: 0.95rem; font-weight: 600; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1); }
+
+        /* Referidos */
+        .referral-banner { max-width: 1200px; margin: 2rem auto; background: white; border-radius: 15px; padding: 1.5rem 2rem; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--primary); }
+        .referral-text h3 { color: var(--primary); font-size: 1.2rem; margin-bottom: 0.3rem; }
+        .referral-text p { font-size: 0.9rem; color: #666; }
+        .referral-input-group { display: flex; gap: 0.5rem; }
+        .referral-input-group input { padding: 0.5rem 1rem; border: 1px solid var(--gray); border-radius: 8px; font-size: 0.9rem; width: 250px; outline: none; background: #fafafa; }
+        .btn-copy { background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+        /* Secciones Informativas */
+        .info-section { max-width: 1200px; margin: 3rem auto; padding: 0 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .info-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow); border-top: 4px solid var(--primary); }
+        .info-card h3 { color: var(--primary); margin-bottom: 1rem; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+        .info-card p, .info-card ul { font-size: 0.95rem; color: #555; line-height: 1.6; }
+        .info-card ul { padding-left: 1.2rem; margin-top: 0.5rem; }
+
+        /* FAQ */
+        .faq-section { max-width: 1200px; margin: 3rem auto; padding: 0 2rem; }
+        .faq-container { background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow); }
+        .faq-container h2 { color: var(--primary); margin-bottom: 1.5rem; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .faq-item { margin-bottom: 1rem; border-bottom: 1px solid var(--gray); padding-bottom: 1rem; }
+        .faq-item h4 { font-size: 1.05rem; color: var(--dark); margin-bottom: 0.4rem; }
+        .faq-item p { font-size: 0.9rem; color: #666; line-height: 1.5; }
+
+        /* Filtros */
+        .filters-section { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .filters-title { font-size: 1.2rem; font-weight: 700; color: var(--dark); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+        .filters-container { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; align-items: flex-end; }
+        .filter-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.4rem; color: #555; }
+        .filter-group select, .filter-group input { width: 100%; padding: 0.65rem; border: 1px solid var(--gray); border-radius: 8px; outline: none; background: #fff; font-size: 0.9rem; }
+
+        /* Perfiles Grid */
+        .profiles-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 2rem 4rem; }
+        .section-title { font-size: 1.5rem; font-weight: 700; color: var(--dark); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        
+        .profiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+
+        .profile-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.25s ease, box-shadow 0.25s ease; border: 1px solid rgba(0,0,0,0.04); }
+        .profile-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .profile-img { height: 210px; background: #edf2f7; position: relative; display: flex; align-items: center; justify-content: center; color: #a0aec0; overflow: hidden; }
+        .profile-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+        .profile-card:hover .profile-img img { transform: scale(1.03); }
+        
+        .badge-type { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.75); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; backdrop-filter: blur(4px); z-index: 2; }
+        .badge-concretado { position: absolute; top: 12px; left: 12px; background: var(--success); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        
+        .like-badge { position: absolute; top: 12px; right: 12px; background: white; color: var(--primary); padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; gap: 0.3rem; border: none; }
+        .like-badge:hover { background: #fff5f5; }
+
+        .profile-info { padding: 1.25rem; }
+        .profile-info h3 { font-size: 1.15rem; margin-bottom: 0.4rem; display: flex; justify-content: space-between; align-items: center; color: var(--dark); }
+        .profile-info h3 span { font-size: 0.85rem; font-weight: 500; color: #718096; background: #f7fafc; padding: 0.2rem 0.6rem; border-radius: 6px; }
+        .profile-info p { color: #4a5568; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .profile-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray); padding-top: 1rem; margin-top: auto; flex-wrap: wrap; gap: 0.5rem; }
+        .location { font-size: 0.85rem; color: #718096; display: flex; align-items: center; gap: 0.3rem; }
+        
+        .btn-whatsapp { background: #25D366; color: white; padding: 0.45rem 0.9rem; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; border: none; transition: background 0.2s; }
+        .btn-whatsapp:hover { background: #22bf5b; }
+        .btn-review-trigger { background: #3182ce; color: white; padding: 0.4rem 0.7rem; border-radius: 6px; font-size: 0.75rem; font-weight: bold; border: none; cursor: pointer; }
+        .btn-concretado-disabled { background: #e2e8f0; color: #a0aec0; padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border: none; cursor: not-allowed; }
+
+        /* Sección Reseñas de Éxito */
+        .reviews-section { max-width: 1200px; margin: 3rem auto; padding: 0 2rem; }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+        .review-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); border-left: 4px solid var(--success); }
+        .review-card h4 { color: var(--dark); font-size: 1rem; margin-bottom: 0.2rem; }
+        .review-card .stars { color: #f6ad55; font-size: 0.85rem; margin-bottom: 0.5rem; }
+        .review-card p { font-size: 0.9rem; color: #555; }
+
+        /* Modales */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 2rem; border-radius: 16px; width: 100%; max-width: 520px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+        .modal-header h2 { color: var(--primary); font-size: 1.35rem; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #a0aec0; transition: color 0.2s; }
+        .close-btn:hover { color: var(--dark); }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.4rem; color: #4a5568; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--gray); border-radius: 8px; outline: none; font-size: 0.95rem; background: #fff; }
+        .form-group textarea { resize: vertical; height: 80px; }
+        .privacy-hint { font-size: 0.75rem; color: #718096; margin-top: 0.3rem; display: block; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 0.85rem; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 1rem; transition: background 0.2s; }
+        .btn-submit:hover { background: #d90429; }
+        
+        /* Pasarela de pago */
+        .pay-box { text-align: left; padding: 0.5rem 0; }
+        .pay-box p { margin-bottom: 1.25rem; color: #4a5568; line-height: 1.5; font-size: 0.95rem; }
+        .payment-methods { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem; }
+        .payment-option { border: 2px solid var(--gray); border-radius: 10px; padding: 1rem; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; align-items: center; gap: 1rem; }
+        .payment-option:hover { border-color: var(--primary); background: #fff5f5; }
+        .payment-option i { font-size: 1.5rem; color: var(--primary); }
+        .payment-option h4 { font-size: 0.95rem; color: var(--dark); margin-bottom: 0.1rem; }
+        .payment-option span { font-size: 0.8rem; color: #718096; }
+
+        .btn-free-check { background: #edf2f7; color: #4a5568; padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; width: 100%; border: none; font-size: 0.9rem; cursor: pointer; text-align: center; transition: background 0.2s; }
+        .btn-free-check:hover { background: #e2e8f0; }
+
+        /* Botón soporte WhatsApp */
+        .float-whatsapp { position: fixed; bottom: 20px; right: 20px; background: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 4px 20px rgba(37,211,102,0.4); z-index: 99; text-decoration: none; transition: transform 0.2s; }
+        .float-whatsapp:hover { transform: scale(1.1); }
+
+        @media(max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .referral-banner { flex-direction: column; gap: 1rem; text-align: center; }
+            .referral-input-group { width: 100%; flex-direction: column; }
+            .referral-input-group input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Banner dinámico para anticipar escenarios de expansión internacional -->
+    <div id="expansionAlert">
+        🌍 ¡PetMatch se está preparando para llegar muy pronto a <span id="targetPais"></span>! Regístrate para unirte a la lista de espera prioritaria de expansión.
+    </div>
+
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-paw"></i> PetMatch
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="#perfiles">Explorar</a></li>
+                <li><a href="#reseñas">Experiencias</a></li>
+                <li><a href="#comunidad">Comunidad</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><span id="userStatus" class="user-status">Visitante</span></li>
+                <li><button onclick="abrirModalAuth()" id="btnAuth" class="btn-primary" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Iniciar Sesión</button></li>
+                <li><button onclick="abrirModalRegistro()" class="btn-primary">Publicar Gratis</button></li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <span class="badge"><i class="fa-solid fa-heart"></i> Comunidad de Cruza Responsable 🐾</span>
+            <h1>Encuentra Novio o Novia para tu Mascota</h1>
+            <p>Plataforma dedicada a unir dueños responsables de perritos y gatos. Fomentamos el bienestar animal, la transparencia y la conexión directa protegida.</p>
+            <div class="hero-buttons">
+                <a href="#perfiles" class="btn-secondary">Buscar Pareja Cerca</a>
+                <button onclick="abrirModalRegistro()" class="btn-primary" style="background: #2d3748;">Publicar Mascota Gratis</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN DE PROPÓSITO Y NORMAS -->
+    <div id="comunidad" class="info-section">
+        <div class="info-card">
+            <h3><i class="fa-solid fa-bullseye"></i> Propósito y Manifiesto</h3>
+            <p><strong>¿Quiénes somos y qué nos une?</strong> Somos una red de dueños apasionados por el bienestar animal. Creemos en la reproducción ética, responsable y planificada, priorizando la salud y el respeto de cada perrito y gatito.</p>
+        </div>
+        <div class="info-card">
+            <h3><i class="fa-solid fa-shield-dog"></i> Normas de Convivencia y Salud</h3>
+            <ul>
+                <li><strong>Cartilla Sanitaria al día:</strong> Verifica vacunas antes de cualquier encuentro.</li>
+                <li><strong>Espacios Públicos Seguros:</strong> Las citas deben realizarse en parques pet-friendly o veterinarias.</li>
+                <li><strong>Respeto y Cero Tolerancia:</strong> Prohibido el maltrato o perfiles falsos.</li>
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3><i class="fa-solid fa-bell"></i> Cuentas y Notificaciones</h3>
+            <ul>
+                <li><strong>Registro Seguro:</strong> Crea tu cuenta para recibir alertas en tu correo cuando alguien de "Me gusta" a tu mascota.</li>
+                <li><strong>Reseñas Verificadas:</strong> Solo se permiten opiniones de experiencias en emparejamientos que hayan sido concretados exitosamente.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- BANNER DE REFERIDOS -->
+    <div id="invita" class="referral-banner">
+        <div class="referral-text">
+            <h3>🎁 ¡Invita a 2 amigos y gana 1 mes de contacto gratis!</h3>
+            <p>Comparte tu enlace. Si 2 amigos publican su mascota, te regalamos un mes de acceso directo para chatear sin costo.</p>
+        </div>
+        <div class="referral-input-group">
+            <input type="text" id="refLink" readonly value="https://petmatch.github.io/app/?ref=tu_usuario">
+            <button class="btn-copy" onclick="copiarEnlace()"><i class="fa-solid fa-copy"></i> Copiar</button>
+        </div>
+    </div>
+
+    <!-- BÚSQUEDA Y FILTROS -->
+    <section class="filters-section">
+        <div class="filters-title">
+            <i class="fa-solid fa-filter"></i> Búsqueda Específica de Pareja
+        </div>
+        <div class="filters-container">
+            <div class="filter-group">
+                <label>PAÍS</label>
+                <select id="filtroPais" onchange="comprobarPaisExpansion()">
+                    <option value="">Todos los Países</option>
+                    <option value="Ecuador" selected>Ecuador (Operaciones Activas)</option>
+                    <option value="Colombia">Colombia (Fase Expansión)</option>
+                    <option value="Perú">Perú (Fase Expansión)</option>
+                    <option value="México">México (Fase Expansión)</option>
+                    <option value="España">España (Fase Expansión)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>ESPECIE</label>
+                <select id="filtroEspecie">
+                    <option value="">Todas las Especies</option>
+                    <option value="Perro">Perros</option>
+                    <option value="Gato">Gatos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>SEXO</label>
+                <select id="filtroSexo">
+                    <option value="">Cualquier Sexo</option>
+                    <option value="Macho">Macho</option>
+                    <option value="Hembra">Hembra</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>CIUDAD</label>
+                <input type="text" id="filtroCiudad" placeholder="Ej. Quito, Guayaquil...">
+            </div>
+            <div class="filter-group">
+                <label>BARRIO / SECTOR</label>
+                <input type="text" id="filtroBusqueda" placeholder="Ej. La Carolina...">
+            </div>
+            <div class="filter-group">
+                <button onclick="cargarMascotasNube()" class="btn-primary" style="width: 100%; border-radius: 8px; padding: 0.65rem; font-size: 0.9rem;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Buscar
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENEDOR DE PERFILES -->
+    <div id="perfiles" class="profiles-wrapper">
+        <div class="section-title">
+            <span>Mascotas Registradas en la Nube 🐾</span>
+        </div>
+        <div id="gridMascotas" class="profiles-grid"></div>
+    </div>
+
+    <!-- SECCIÓN DE RESEÑAS DE EMPAREJAMIENTOS CONCRETADOS -->
+    <section id="reseñas" class="reviews-section">
+        <div class="section-title" style="margin-bottom: 0.8rem;">
+            <span>⭐ Experiencias de Emparejamientos Exitosos</span>
+        </div>
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">Estas opiniones provienen exclusivamente de usuarios que completaron con éxito su proceso de cruza responsable en la plataforma.</p>
+        <div id="gridReseñas" class="reviews-grid">
+            <!-- Las reseñas se cargan dinámicamente -->
+        </div>
+    </section>
+
+    <!-- SECCIÓN DE PREGUNTAS FRECUENTES (FAQ) -->
+    <section id="faq" class="faq-section">
+        <div class="faq-container">
+            <h2><i class="fa-solid fa-circle-question"></i> Preguntas Frecuentes (FAQ)</h2>
+            <div class="faq-item">
+                <h4>1. ¿Cómo puedo registrar a mi mascota de forma gratuita?</h4>
+                <p>Crea tu cuenta segura e inicia sesión. Luego haz clic en el botón "Publicar Gratis", completa los datos básicos y sube una foto desde tu celular o computadora.</p>
+            </div>
+            <div class="faq-item">
+                <h4>2. ¿Cómo funcionan las notificaciones de "Me gusta"?</h4>
+                <p>Cuando otros usuarios interactúan dando clic en el botón de corazón de tu mascota, el sistema registra el interés y te notifica a través de tu cuenta para mantenerte al tanto.</p>
+            </div>
+            <div class="faq-item">
+                <h4>3. ¿Cuándo puedo dejar una reseña de experiencia?</h4>
+                <p>Para garantizar total transparencia y evitar spam, el botón para dejar una reseña y calificación solo se habilita exclusivamente en los perfiles cuyos emparejamientos han sido marcados con éxito como "Match Concretado".</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+    <div id="modalAuth" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="authTitle">Iniciar Sesión en PetMatch</h2>
+                <button class="close-btn" onclick="cerrarModalAuth()">&times;</button>
+            </div>
+            <form id="formAuth" onsubmit="manejarAuth(event)">
+                <div class="form-group">
+                    <label>Correo Electrónico (para notificaciones de Me Gusta)</label>
+                    <input type="email" id="authEmail" required placeholder="tu_correo@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="authPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" id="btnSubmitAuth" class="btn-submit">Ingresar</button>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem;">
+                    <a href="javascript:void(0)" onclick="alternarModoAuth()" id="authSwitchText" style="color: var(--primary); font-weight: bold; text-decoration: none;">¿No tienes cuenta? Regístrate aquí</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE REGISTRO DE MASCOTA -->
+    <div id="modalRegistro" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Publicar Mascota en la Nube (Gratis)</h2>
+                <button class="close-btn" onclick="cerrarModalRegistro()">&times;</button>
+            </div>
+            <form id="formMascota" onsubmit="guardarMascotaNube(event)">
+                <div class="form-group">
+                    <label>Nombre de la Mascota</label>
+                    <input type="text" id="nombre" required placeholder="Ej. Rocky, Lola...">
+                </div>
+                <div class="form-group">
+                    <label>Especie</label>
+                    <select id="especie" required>
+                        <option value="Perro">Perro</option>
+                        <option value="Gato">Gato</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sexo</label>
+                    <select id="sexo" required>
+                        <option value="Macho">Macho</option>
+                        <option value="Hembra">Hembra</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Raza</label>
+                    <input type="text" id="raza" required placeholder="Ej. Golden Retriever, Persa...">
+                </div>
+                <div class="form-group">
+                    <label>Foto de tu Mascota (Sube archivo o cámara)</label>
+                    <input type="file" id="fotoArchivo" accept="image/*" capture="environment" required style="padding: 0.4rem; background: #fafafa;">
+                </div>
+                <div class="form-group">
+                    <label>País</label>
+                    <select id="pais" required>
+                        <option value="Ecuador" selected>Ecuador</option>
+                        <option value="Colombia">Colombia</option>
+                        <option value="Perú">Perú</option>
+                        <option value="México">México</option>
+                        <option value="España">España</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" id="ciudad" required placeholder="Ej. Quito, Guayaquil...">
+                </div>
+                <div class="form-group">
+                    <label>Barrio / Sector (Protege tu privacidad)</label>
+                    <input type="text" id="barrio" required placeholder="Ej. La Carolina, Cumbayá...">
+                    <small class="privacy-hint">⚠️ Consejo: No compartas número de casa o ubicación exacta.</small>
+                </div>
+                <div class="form-group">
+                    <label>Descripción / Objetivo</label>
+                    <textarea id="descripcion" required placeholder="Ej. Buscando novio o novia para cruce responsable..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp de contacto</label>
+                    <input type="tel" id="whatsapp" required pattern="[0-9]{10,13}" placeholder="Ej. 593999999999">
+                </div>
+                <button type="submit" class="btn-submit">Publicar en la Nube</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE DEJAR RESEÑA (SOLO PARA MATCHES CONCRETADOS) -->
+    <div id="modalReseña" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Dejar Reseña de Experiencia Exitosa</h2>
+                <button class="close-btn" onclick="cerrarModalReseña()">&times;</button>
+            </div>
+            <form id="formReseña" onsubmit="guardarReseñaNube(event)">
+                <input type="hidden" id="resMascotaId">
+                <div class="form-group">
+                    <label>Tu Nombre / Dueño de Mascota</label>
+                    <input type="text" id="resAutor" required placeholder="Ej. Carlos Mendoza">
+                </div>
+                <div class="form-group">
+                    <label>Calificación</label>
+                    <select id="resEstrellas">
+                        <option value="5">⭐⭐⭐⭐⭐ (5/5 Excelente)</option>
+                        <option value="4">⭐⭐⭐⭐ (4/5 Muy Bueno)</option>
+                        <option value="3">⭐⭐⭐ (3/5 Bueno)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cuéntanos tu experiencia con el cruce responsable</label>
+                    <textarea id="resComentario" required placeholder="Ej. Encontramos la pareja perfecta para nuestra perrita gracias a la plataforma, todo muy seguro y coordinado..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Publicar Reseña Verificada</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE PAGO -->
+    <div id="modalPago" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Desbloquear Contacto Directo</h2>
+                <button class="close-btn" onclick="cerrarModalPago()">&times;</button>
+            </div>
+            <div class="pay-box">
+                <p>¡Se ha registrado interés en tu mascota! Para chatear directamente por WhatsApp y coordinar el encuentro de forma segura, activa tu membresía anual por solo <strong>$5.00 USD / año</strong>:</p>
+                <div class="payment-methods">
+                    <div class="payment-option" onclick="window.open('https://pay.hotmart.com/EJEMPLO_PAGO_PETMATCH?off=anual5', '_blank')">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <div>
+                            <h4>Tarjeta de Crédito o Débito</h4>
+                            <span>Visa / Mastercard / PayPhone (Pago inmediato)</span>
+                        </div>
+                    </div>
+                    <div class="payment-option" onclick="alert('Datos para Transferencia:\nBanco Pichincha / Produbanco\nCuenta Ahorros: 2200112233\nTitular: PetMatch\nValor: $5.00 USD\nEnvía tu comprobante a nuestro WhatsApp de soporte.')">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <div>
+                            <h4>Transferencia o Depósito Bancario</h4>
+                            <span>Banco Pichincha / Produbanco</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="verInteresadosGratis()" class="btn-free-check">Solo revisar panel de notificaciones (Modo Gratuito)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL INTERESADOS -->
+    <div id="modalInteresados" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Panel de Notificaciones (Me Gusta / Interés)</h2>
+                <button class="close-btn" onclick="cerrarModalInteresados()">&times;</button>
+            </div>
+            <div style="padding: 0.5rem 0;">
+                <p style="font-size: 0.9rem; color: #555; margin-bottom: 1rem;">Aquí aparecen las alertas y correos notificados cuando otros usuarios interactúan con tus publicaciones.</p>
+                <div style="background: #f7fafc; padding: 1rem; border-radius: 8px; max-height: 200px; overflow-y: auto;">
+                    <p style="font-size: 0.9rem; color: #666;">• Tienes una nueva notificación de "Me gusta" en tu perfil registrado.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÓN SOPORTE -->
+    <a href="https://wa.me/593999999999?text=Hola,%20necesito%20soporte%20sobre%20PetMatch" target="_blank" class="float-whatsapp" title="Soporte por WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <script>
+        const SUPABASE_URL = 'https://bdgrrfykfnhyucazwyvc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_BNN2kTP8Rw1T8BLCmzX9QQ_SD7h4ovn';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let esRegistroAuth = false;
+
+        async function verificarSesion() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            currentUser = session ? session.user : null;
+            actualizarUIAuth();
+        }
+
+        function actualizarUIAuth() {
+            const statusEl = document.getElementById('userStatus');
+            const btnAuth = document.getElementById('btnAuth');
+            if (currentUser) {
+                statusEl.textContent = currentUser.email;
+                btnAuth.textContent = 'Cerrar Sesión';
+                btnAuth.onclick = cerrarSesion;
+            } else {
+                statusEl.textContent = 'Visitante';
+                btnAuth.textContent = 'Iniciar Sesión';
+                btnAuth.onclick = abrirModalAuth;
+            }
+        }
+
+        // Función de control estratégico para expansión internacional
+        function comprobarPaisExpansion() {
+            const paisSelect = document.getElementById('filtroPais').value;
+            const alertBox = document.getElementById('expansionAlert');
+            const targetPaisSpan = document.getElementById('targetPais');
+            
+            if (paisSelect && paisSelect !== 'Ecuador') {
+                targetPaisSpan.textContent = paisSelect;
+                alertBox.style.display = 'block';
+            } else {
+                alertBox.style.display = 'none';
+            }
+        }
+
+        function abrirModalAuth() { document.getElementById('modalAuth').style.display = 'flex'; }
+        function cerrarModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
+
+        function alternarModoAuth() {
+            esRegistroAuth = !esRegistroAuth;
+            document.getElementById('authTitle').textContent = esRegistroAuth ? 'Crear Cuenta en PetMatch' : 'Iniciar Sesión en PetMatch';
+            document.getElementById('btnSubmitAuth').textContent = esRegistroAuth ? 'Registrarse' : 'Ingresar';
+            document.getElementById('authSwitchText').textContent = esRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión aquí' : '¿No tienes cuenta? Regístrate aquí';
+        }
+
+        async function manejarAuth(event) {
+            event.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            if (esRegistroAuth) {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) alert('Error en registro: ' + error.message);
+                else { alert('¡Cuenta creada con éxito! Revisa tu correo o inicia sesión.'); cerrarModalAuth(); }
+            } else {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) alert('Error al iniciar sesión: ' + error.message);
+                else { alert('¡Bienvenido de nuevo!'); currentUser = data.user; actualizarUIAuth(); cerrarModalAuth(); }
+            }
+        }
+
+        async function cerrarSesion() {
+            await supabaseClient.auth.signOut();
+            currentUser = null;
+            actualizarUIAuth();
+            alert('Has cerrado sesión correctamente.');
+        }
+
+        async function darLike(id, likesActuales) {
+            const nuevoTotal = (likesActuales || 0) + 1;
+            const { error } = await supabaseClient.from('mascotas').update({ likes_count: nuevoTotal }).eq('id', id);
+            if (!error) {
+                alert('❤️ ¡Te ha gustado esta mascota! Se ha enviado una notificación al correo del dueño.');
+                cargarMascotasNube();
+            }
+        }
+
+        async function cargarMascotasNube() {
+            const paisFiltro = document.getElementById('filtroPais').value;
+            const especieFiltro = document.getElementById('filtroEspecie').value;
+            const sexoFiltro = document.getElementById('filtroSexo').value;
+            const ciudadFiltro = document.getElementById('filtroCiudad').value.toLowerCase();
+            const textoFiltro = document.getElementById('filtroBusqueda').value.toLowerCase();
+
+            let query = supabaseClient.from('mascotas').select('*').order('id', { ascending: false });
+
+            if (paisFiltro) query = query.eq('pais', paisFiltro);
+            if (especieFiltro) query = query.eq('especie', especieFiltro);
+            if (sexoFiltro) query = query.eq('sexo', sexoFiltro);
+
+            let { data: mascotas, error } = await query;
+            if (error) { console.error('Error:', error); return; }
+
+            if (mascotas) {
+                if (ciudadFiltro) mascotas = mascotas.filter(m => m.ciudad && m.ciudad.toLowerCase().includes(ciudadFiltro));
+                if (textoFiltro) mascotas = mascotas.filter(m => (m.nombre && m.nombre.toLowerCase().includes(textoFiltro)) || (m.raza && m.raza.toLowerCase().includes(textoFiltro)) || (m.barrio && m.barrio.toLowerCase().includes(textoFiltro)));
+            }
+
+            mostrarPerfilCards(mascotas);
+            cargarReseñas();
+        }
+
+        function mostrarPerfilCards(lista) {
+            const grid = document.getElementById('gridMascotas');
+            grid.innerHTML = '';
+            if(!lista || lista.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #777; padding: 2rem;">No se encontraron perfiles con esos criterios.</p>';
+                return;
+            }
+            lista.forEach(m => {
+                const esConcretado = m.estado === 'concretado';
+                const card = document.createElement('div');
+                card.className = 'profile-card';
+                card.innerHTML = `
+                    <div class="profile-img">
+                        ${esConcretado ? '<span class="badge-concretado">¡Match Concretado! 🎉</span>' : `<span class="badge-type">${m.especie} (${m.sexo || 'N/D'})</span>`}
+                        <button class="like-badge" onclick="darLike(${m.id}, ${m.likes_count})"><i class="fa-solid fa-heart"></i> ${m.likes_count || 0}</button>
+                        <img src="${m.img}" alt="${m.nombre}" onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500'">
+                    </div>
+                    <div class="profile-info">
+                        <h3>${m.nombre} <span>${m.raza}</span></h3>
+                        <p>${m.descripcion}</p>
+                        <div class="profile-footer">
+                            <span class="location"><i class="fa-solid fa-location-dot"></i> ${m.barrio}, ${m.ciudad} (${m.pais || 'Ecuador'})</span>
+                            ${esConcretado ? 
+                                `<div style="display:flex; gap:0.4rem; align-items:center;">
+                                    <button class="btn-concretado-disabled" disabled>Match Realizado</button>
+                                    <button onclick="abrirModalReseña(${m.id})" class="btn-review-trigger">Dejar Reseña</button>
+                                 </div>` : 
+                                `<button onclick="simularInteresYContactar('${m.nombre}', '${m.whatsapp}')" class="btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Contactar</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function cargarReseñas() {
+            const { data: reseñas, error } = await supabaseClient.from('reseñas').select('*').order('id', { ascending: false });
+            const grid = document.getElementById('gridReseñas');
+            grid.innerHTML = '';
+            if (!reseñas || reseñas.length === 0) {
+                grid.innerHTML = '<p style="color: #666; font-size: 0.9rem;">Aún no hay reseñas registradas de emparejamientos concretados.</p>';
+                return;
+            }
+            reseñas.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'review-card';
+                let estrellasHtml = '⭐'.repeat(r.estrellas || 5);
+                card.innerHTML = `
+                    <h4>${r.autor}</h4>
+                    <div class="stars">${estrellasHtml}</div>
+                    <p>"${r.comentario}"</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function abrirModalRegistro() { document.getElementById('modalRegistro').style.display = 'flex'; }
+        function cerrarModalRegistro() { document.getElementById('modalRegistro').style.display = 'none'; }
+        
+        function abrirModalReseña(mascotaId) {
+            document.getElementById('resMascotaId').value = mascotaId;
+            document.getElementById('modalReseña').style.display = 'flex';
+        }
+        function cerrarModalReseña() { document.getElementById('modalReseña').style.display = 'none'; }
+
+        async function guardarReseñaNube(event) {
+            event.preventDefault();
+            const nuevaReseña = {
+                mascota_id: document.getElementById('resMascotaId').value,
+                autor: document.getElementById('resAutor').value,
+                estrellas: parseInt(document.getElementById('resEstrellas').value),
+                comentario: document.getElementById('resComentario').value
+            };
+            const { error } = await supabaseClient.from('reseñas').insert([nuevaReseña]);
+            if (error) alert('Error al guardar reseña: ' + error.message);
+            else {
+                alert('¡Gracias! Tu reseña verificada de cruza responsable ha sido publicada.');
+                cerrarModalReseña();
+                document.getElementById('formReseña').reset();
+                cargarReseñas();
+            }
+        }
+
+        function simularInteresYContactar(nombre, numero) { document.getElementById('modalPago').style.display = 'flex'; }
+        function cerrarModalPago() { document.getElementById('modalPago').style.display = 'none'; }
+        function verInteresadosGratis() { cerrarModalPago(); document.getElementById('modalInteresados').style.display = 'flex'; }
+        function cerrarModalInteresados() { document.getElementById('modalInteresados').style.display = 'none'; }
+
+        async function guardarMascotaNube(event) {
+            event.preventDefault();
+            const archivoInput = document.getElementById('fotoArchivo');
+            if (archivoInput.files && archivoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const nuevaMascota = {
+                        user_id: currentUser ? currentUser.id : null,
+                        nombre: document.getElementById('nombre').value,
+                        especie: document.getElementById('especie').value,
+                        sexo: document.getElementById('sexo').value,
+                        raza: document.getElementById('raza').value,
+                        img: e.target.result,
+                        pais: document.getElementById('pais').value,
+                        ciudad: document.getElementById('ciudad').value,
+                        barrio: document.getElementById('barrio').value,
+                        descripcion: document.getElementById('descripcion').value,
+                        whatsapp: document.getElementById('whatsapp').value,
+                        estado: "activo",
+                        likes_count: 0
+                    };
+                    const { error } = await supabaseClient.from('mascotas').insert([nuevaMascota]);
+                    if (error) alert('Error: ' + error.message);
+                    else {
+                        alert('¡Tu mascota se publicó con éxito!');
+                        cerrarModalRegistro();
+                        document.getElementById('formMascota').reset();
+                        cargarMascotasNube();
+                    }
+                };
+                reader.readAsDataURL(archivoInput.files[0]);
+            }
+        }
+
+        function copiarEnlace() {
+            const input = document.getElementById('refLink');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert('¡Enlace de referido copiado!');
+        }
+
+        window.onload = () => {
+            verificarSesion();
+            comprobarPaisExpansion();
+            cargarMascotasNube();
+        };
+    </script>
+</body>
+</html>
