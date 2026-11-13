@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetMatch Ecuador - Buscar Pareja, Novio o Novia para mi Mascota y Cruza de Perros y Gatos</title>
+    <meta name="description" content="Plataforma comunitaria y gratuita en Ecuador para encontrar pareja, novio o novia para tu perrito o gato, cruza responsable y contacto directo protegido.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Librería oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --primary: #e63946;
+            --secondary: #ff6b6b;
+            --dark: #2d3748;
+            --light: #fdf2f4;
+            --gray: #e2e8f0;
+            --success: #28a745;
+            --shadow: 0 10px 25px rgba(0,0,0,0.06);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8fafc; color: var(--dark); scroll-behavior: smooth; }
+        
+        /* Navbar */
+        header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; text-decoration: none; cursor: pointer; }
+        .nav-links { display: flex; gap: 1.5rem; list-style: none; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; transition: color 0.3s; cursor: pointer; font-size: 0.95rem; }
+        .nav-links a:hover { color: var(--primary); }
+        .btn-primary { background: var(--primary); color: white; padding: 0.6rem 1.2rem; border-radius: 50px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 15px rgba(230,57,70,0.3); transition: transform 0.2s; display: inline-block; cursor: pointer; border: none; }
+        .btn-primary:hover { transform: translateY(-2px); }
+
+        /* Hero Section */
+        .hero { 
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(45, 55, 72, 0.7)), url('https://images.unsplash.com/photo-1534361960057-19889db9621e?w=1200') no-repeat center center/cover; 
+            color: white; 
+            padding: 5rem 2rem; 
+            text-align: center; 
+        }
+        .hero-content { max-width: 800px; margin: 0 auto; }
+        .badge { background: rgba(230,57,70,0.9); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 1rem; font-weight: bold; color: white; }
+        .hero h1 { font-size: 2.8rem; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .hero p { font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.95; line-height: 1.6; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; }
+        .btn-secondary { background: white; color: var(--primary); padding: 0.8rem 1.8rem; border-radius: 50px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: inline-block; cursor: pointer; border: none; transition: transform 0.2s; }
+        .btn-secondary:hover { transform: scale(1.05); }
+
+        /* Sub Banner */
+        .sub-banner { background: #fff3cd; color: #856404; text-align: center; padding: 0.8rem; font-size: 0.95rem; font-weight: 600; border-bottom: 1px solid #ffeeba; }
+
+        /* Referidos */
+        .referral-banner { max-width: 1200px; margin: 2rem auto; background: white; border-radius: 15px; padding: 1.5rem 2rem; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--primary); }
+        .referral-text h3 { color: var(--primary); font-size: 1.2rem; margin-bottom: 0.3rem; }
+        .referral-text p { font-size: 0.9rem; color: #666; }
+        .referral-input-group { display: flex; gap: 0.5rem; }
+        .referral-input-group input { padding: 0.5rem 1rem; border: 1px solid var(--gray); border-radius: 8px; font-size: 0.9rem; width: 250px; outline: none; background: #fafafa; }
+        .btn-copy { background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+        /* Secciones Informativas y de Seguridad */
+        .info-section { max-width: 1200px; margin: 3rem auto; padding: 0 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .info-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow); border-top: 4px solid var(--primary); }
+        .info-card h3 { color: var(--primary); margin-bottom: 1rem; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+        .info-card p, .info-card ul { font-size: 0.95rem; color: #555; line-height: 1.6; }
+        .info-card ul { padding-left: 1.2rem; margin-top: 0.5rem; }
+
+        /* Filtros */
+        .filters-section { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .filters-container { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .filter-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.4rem; color: #555; }
+        .filter-group select, .filter-group input { width: 100%; padding: 0.6rem; border: 1px solid var(--gray); border-radius: 6px; outline: none; background: #fff; }
+
+        /* Perfiles Grid Profesional (Previene amontonamiento) */
+        .profiles-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 2rem 4rem; }
+        .section-title { font-size: 1.5rem; font-weight: 700; color: var(--dark); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        
+        .profiles-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 2rem; 
+        }
+
+        .profile-card { 
+            background: white; 
+            border-radius: 14px; 
+            overflow: hidden; 
+            box-shadow: var(--shadow); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            transition: transform 0.25s ease, box-shadow 0.25s ease; 
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .profile-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+        }
+        .profile-img { 
+            height: 210px; 
+            background: #edf2f7; 
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: #a0aec0; 
+            overflow: hidden;
+        }
+        .profile-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+        .profile-card:hover .profile-img img { transform: scale(1.03); }
+        
+        .badge-type { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.75); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; backdrop-filter: blur(4px); z-index: 2; }
+        .badge-concretado { position: absolute; top: 12px; left: 12px; background: var(--success); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+        .profile-info { padding: 1.25rem; }
+        .profile-info h3 { font-size: 1.15rem; margin-bottom: 0.4rem; display: flex; justify-content: space-between; align-items: center; color: var(--dark); }
+        .profile-info h3 span { font-size: 0.85rem; font-weight: 500; color: #718096; background: #f7fafc; padding: 0.2rem 0.6rem; border-radius: 6px; }
+        .profile-info p { color: #4a5568; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .profile-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray); padding-top: 1rem; margin-top: auto; }
+        .location { font-size: 0.85rem; color: #718096; display: flex; align-items: center; gap: 0.3rem; }
+        
+        .btn-whatsapp { background: #25D366; color: white; padding: 0.45rem 0.9rem; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; border: none; transition: background 0.2s; }
+        .btn-whatsapp:hover { background: #22bf5b; }
+        .btn-concretado-disabled { background: #e2e8f0; color: #a0aec0; padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; border: none; cursor: not-allowed; }
+
+        /* Modales */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 2rem; border-radius: 16px; width: 100%; max-width: 520px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+        .modal-header h2 { color: var(--primary); font-size: 1.35rem; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #a0aec0; transition: color 0.2s; }
+        .close-btn:hover { color: var(--dark); }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.4rem; color: #4a5568; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--gray); border-radius: 8px; outline: none; font-size: 0.95rem; background: #fff; }
+        .form-group textarea { resize: vertical; height: 80px; }
+        .privacy-hint { font-size: 0.75rem; color: #718096; margin-top: 0.3rem; display: block; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 0.85rem; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 1rem; transition: background 0.2s; }
+        .btn-submit:hover { background: #d90429; }
+        
+        /* Sección de Pago con Métodos Locales Ecuador */
+        .pay-box { text-align: left; padding: 0.5rem 0; }
+        .pay-box p { margin-bottom: 1.25rem; color: #4a5568; line-height: 1.5; font-size: 0.95rem; }
+        
+        .payment-methods { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem; }
+        .payment-option { border: 2px solid var(--gray); border-radius: 10px; padding: 1rem; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; align-items: center; gap: 1rem; }
+        .payment-option:hover { border-color: var(--primary); background: #fff5f5; }
+        .payment-option i { font-size: 1.5rem; color: var(--primary); }
+        .payment-option h4 { font-size: 0.95rem; color: var(--dark); margin-bottom: 0.1rem; }
+        .payment-option span { font-size: 0.8rem; color: #718096; }
+
+        .btn-free-check { background: #edf2f7; color: #4a5568; padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; width: 100%; border: none; font-size: 0.9rem; cursor: pointer; text-align: center; transition: background 0.2s; }
+        .btn-free-check:hover { background: #e2e8f0; }
+
+        /* Botón flotante de soporte WhatsApp */
+        .float-whatsapp { position: fixed; bottom: 20px; right: 20px; background: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 4px 20px rgba(37,211,102,0.4); z-index: 99; text-decoration: none; transition: transform 0.2s; }
+        .float-whatsapp:hover { transform: scale(1.1); }
+
+        @media(max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .referral-banner { flex-direction: column; gap: 1rem; text-align: center; }
+            .referral-input-group { width: 100%; flex-direction: column; }
+            .referral-input-group input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sub-banner">
+        🎉 ¡Publicación y búsqueda 100% Gratuita! Conecta con dueños de mascotas en todo el Ecuador de forma directa.
+    </div>
+
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-paw"></i> PetMatch
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="#perfiles">Explorar</a></li>
+                <li><a href="#comunidad">Comunidad</a></li>
+                <li><a href="#consejos">Recomendaciones</a></li>
+                <li><button onclick="abrirModalRegistro()" class="btn-primary">Publicar Gratis</button></li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <span class="badge"><i class="fa-solid fa-heart"></i> Comunidad de Cruza Responsable en Ecuador 🇪🇨</span>
+            <h1>Encuentra Novio o Novia para tu Mascota</h1>
+            <p>Busca pareja, novio o novia para tu perrito o gato, o cruza responsable en Ecuador. Sube tu foto y conéctate con dueños de todo el país.</p>
+            <div class="hero-buttons">
+                <a href="#perfiles" class="btn-secondary">Buscar Pareja Cerca</a>
+                <button onclick="abrirModalRegistro()" class="btn-primary" style="background: #2d3748;">Publicar Mascota Gratis</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN INFORMATIVA, SALUD Y CONSEJOS DE SEGURIDAD -->
+    <div id="comunidad" class="info-section">
+        <div class="info-card">
+            <h3><i class="fa-solid fa-seedling"></i> ¡Iniciando Comunidad!</h3>
+            <p>Formamos un nuevo espacio digital en Ecuador. Sé de los primeros en registrar a tu perrito o gatito en Quito, Guayaquil, Cuenca y más ciudades para encontrar la pareja ideal.</p>
+        </div>
+        <div id="consejos" class="info-card">
+            <h3><i class="fa-solid fa-shield-dog"></i> Salud y Cruza Responsable</h3>
+            <ul>
+                <li><strong>Cartilla Sanitaria:</strong> Verifica vacunas y desparasitación al día antes de concretar.</li>
+                <li><strong>Encuentros Públicos:</strong> Realiza las citas en parques pet-friendly, veterinarias o centros comerciales.</li>
+                <li><strong>Acuerdos Claros:</strong> Define previamente las condiciones del emparejamiento con el otro dueño.</li>
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3><i class="fa-solid fa-lock"></i> Privacidad y Autoprotección</h3>
+            <ul>
+                <li><strong>No des direcciones exactas:</strong> Utiliza únicamente tu sector o barrio general.</li>
+                <li><strong>Desconfía de anomalías:</strong> La plataforma facilita el contacto inicial; la verificación presencial es exclusiva responsabilidad de cada usuario.</li>
+                <li><strong>Soporte y Reportes:</strong> Si notas un perfil sospechoso, repórtalo inmediatamente a través de nuestros canales de asistencia.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- BANNER DE REFERIDOS -->
+    <div id="invita" class="referral-banner">
+        <div class="referral-text">
+            <h3>🎁 ¡Invita a 2 amigos y gana 1 mes de contacto gratis!</h3>
+            <p>Comparte tu enlace. Si 2 amigos publican su mascota, te regalamos un mes de acceso directo para chatear sin costo.</p>
+        </div>
+        <div class="referral-input-group">
+            <input type="text" id="refLink" readonly value="https://petmatch-ecuador.github.io/petmatch/?ref=tu_usuario">
+            <button class="btn-copy" onclick="copiarEnlace()"><i class="fa-solid fa-copy"></i> Copiar</button>
+        </div>
+    </div>
+
+    <section class="filters-section">
+        <div class="filters-container">
+            <div class="filter-group">
+                <label>ESPECIE</label>
+                <select id="filtroEspecie" onchange="cargarMascotasNube()">
+                    <option value="">Todas las Especies</option>
+                    <option value="Perro">Perros</option>
+                    <option value="Gato">Gatos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>SEXO</label>
+                <select id="filtroSexo" onchange="cargarMascotasNube()">
+                    <option value="">Cualquier Sexo</option>
+                    <option value="Macho">Macho</option>
+                    <option value="Hembra">Hembra</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>CIUDAD DE ECUADOR</label>
+                <select id="filtroCiudad" onchange="cargarMascotasNube()">
+                    <option value="">Todas las Ciudades</option>
+                    <option value="Quito">Quito</option>
+                    <option value="Guayaquil">Guayaquil</option>
+                    <option value="Cuenca">Cuenca</option>
+                    <option value="Ambato">Ambato</option>
+                    <option value="Manta">Manta</option>
+                    <option value="Santo Domingo">Santo Domingo</option>
+                    <option value="Portoviejo">Portoviejo</option>
+                    <option value="Loja">Loja</option>
+                    <option value="Machala">Machala</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>BARRIO / SECTOR</label>
+                <input type="text" id="filtroBusqueda" onkeyup="cargarMascotasNube()" placeholder="Ej. La Carolina, Urdesa...">
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENEDOR DE PERFILES CON DISEÑO PROFESIONAL RESPONSIVO -->
+    <div id="perfiles" class="profiles-wrapper">
+        <div class="section-title">
+            <span>Mascotas Registradas en la Nube 🐾</span>
+        </div>
+        <div id="gridMascotas" class="profiles-grid">
+            <!-- Las tarjetas se generan dinámicamente aquí -->
+        </div>
+    </div>
+
+    <!-- MODAL DE REGISTRO GRATIS -->
+    <div id="modalRegistro" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Publicar Mascota en la Nube (Gratis)</h2>
+                <button class="close-btn" onclick="cerrarModalRegistro()">&times;</button>
+            </div>
+            <form id="formMascota" onsubmit="guardarMascotaNube(event)">
+                <div class="form-group">
+                    <label>Nombre de la Mascota</label>
+                    <input type="text" id="nombre" required placeholder="Ej. Rocky, Lola...">
+                </div>
+                <div class="form-group">
+                    <label>Especie</label>
+                    <select id="especie" required>
+                        <option value="Perro">Perro</option>
+                        <option value="Gato">Gato</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Raza</label>
+                    <input type="text" id="raza" required placeholder="Ej. Golden Retriever, Persa...">
+                </div>
+                <div class="form-group">
+                    <label>Foto de tu Mascota (Sube archivo o cámara)</label>
+                    <input type="file" id="fotoArchivo" accept="image/*" capture="environment" required style="padding: 0.4rem; background: #fafafa;">
+                </div>
+                <div class="form-group">
+                    <label>Ciudad en Ecuador</label>
+                    <select id="ciudad" required>
+                        <option value="Quito">Quito</option>
+                        <option value="Guayaquil">Guayaquil</option>
+                        <option value="Cuenca">Cuenca</option>
+                        <option value="Ambato">Ambato</option>
+                        <option value="Manta">Manta</option>
+                        <option value="Santo Domingo">Santo Domingo</option>
+                        <option value="Portoviejo">Portoviejo</option>
+                        <option value="Loja">Loja</option>
+                        <option value="Machala">Machala</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Barrio / Sector (Protege tu privacidad)</label>
+                    <input type="text" id="barrio" required placeholder="Ej. La Carolina, Cumbayá...">
+                    <small class="privacy-hint">⚠️ Consejo: No compartas número de casa o ubicación exacta.</small>
+                </div>
+                <div class="form-group">
+                    <label>Descripción / Objetivo</label>
+                    <textarea id="descripcion" required placeholder="Ej. Buscando novio o novia para cruce responsable..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp de contacto</label>
+                    <input type="tel" id="whatsapp" required pattern="[0-9]{10,13}" placeholder="Ej. 593999999999">
+                </div>
+                <button type="submit" class="btn-submit">Publicar en la Nube</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE PAGO Y MÉTODOS LOCALES PARA ECUADOR ($5) -->
+    <div id="modalPago" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Desbloquear Contacto Directo</h2>
+                <button class="close-btn" onclick="cerrarModalPago()">&times;</button>
+            </div>
+            <div class="pay-box">
+                <p>¡Se ha registrado interés en tu mascota! Para chatear directamente por WhatsApp y coordinar el encuentro de forma segura, activa tu membresía anual por solo <strong>$5.00 USD / año</strong> eligiendo tu método de pago preferido:</p>
+                
+                <div class="payment-methods">
+                    <!-- Opción 1: Tarjeta de Crédito / Débito -->
+                    <div class="payment-option" onclick="window.open('https://pay.hotmart.com/EJEMPLO_PAGO_PETMATCH?off=anual5', '_blank')">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <div>
+                            <h4>Tarjeta de Crédito o Débito</h4>
+                            <span>Visa / Mastercard / PayPhone (Pago inmediato)</span>
+                        </div>
+                    </div>
+
+                    <!-- Opción 2: Transferencia Bancaria Local (Ecuador) -->
+                    <div class="payment-option" onclick="alert('Datos para Transferencia en Ecuador:\nBanco Pichincha / Produbanco\nCuenta de Ahorros: 2200112233\nTitular: PetMatch Ecuador\nC.I./RUC: 1799999999001\nValor: $5.00 USD\nEnvía tu comprobante a nuestro WhatsApp de soporte para activar tu cuenta.')">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <div>
+                            <h4>Transferencia o Depósito Bancario</h4>
+                            <span>Banco Pichincha / Produbanco (Ecuador)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="verInteresadosGratis()" class="btn-free-check">Solo revisar panel de notificaciones (Modo Gratuito)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE INTERESADOS -->
+    <div id="modalInteresados" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Panel de Interesados (Modo Gratuito)</h2>
+                <button class="close-btn" onclick="cerrarModalInteresados()">&times;</button>
+            </div>
+            <div style="padding: 0.5rem 0;">
+                <p style="font-size: 0.9rem; color: #555; margin-bottom: 1rem;">Aquí puedes ver qué perfiles han mostrado interés en tu mascota dentro de la comunidad en Ecuador.</p>
+                <div style="background: #f7fafc; padding: 1rem; border-radius: 8px; max-height: 200px; overflow-y: auto;">
+                    <p style="font-size: 0.9rem; color: #666;">• Un usuario con perrito o gatito ha visitado el perfil de tu mascota.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÓN SOPORTE -->
+    <a href="https://wa.me/593999999999?text=Hola,%20necesito%20soporte%20sobre%20PetMatch%20Ecuador" target="_blank" class="float-whatsapp" title="Soporte por WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <script>
+        // CONFIGURACIÓN DE SUPABASE
+        const SUPABASE_URL = 'https://bdgrrfykfnhyucazwyvc.supabase.co';
+        const SUPABASE_ANON_KEY = 'AQUÍ_TU_ANON_KEY_DE_SUPABASE';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function cargarMascotasNube() {
+            const especieFiltro = document.getElementById('filtroEspecie').value;
+            const ciudadFiltro = document.getElementById('filtroCiudad').value;
+            const textoFiltro = document.getElementById('filtroBusqueda').value.toLowerCase();
+
+            let query = supabaseClient.from('mascotas').select('*').order('id', { ascending: false });
+
+            if (especieFiltro) query = query.eq('especie', especieFiltro);
+            if (ciudadFiltro) query = query.eq('ciudad', ciudadFiltro);
+
+            let { data: mascotas, error } = await query;
+            if (error) {
+                console.error('Error al cargar de la nube:', error);
+                return;
+            }
+
+            if (textoFiltro && mascotas) {
+                mascotas = mascotas.filter(m => 
+                    m.nombre.toLowerCase().includes(textoFiltro) || 
+                    m.raza.toLowerCase().includes(textoFiltro) || 
+                    m.barrio.toLowerCase().includes(textoFiltro) ||
+                    m.descripcion.toLowerCase().includes(textoFiltro)
+                );
+            }
+
+            mostrarPerfilCards(mascotas);
+        }
+
+        function mostrarPerfilCards(lista) {
+            const grid = document.getElementById('gridMascotas');
+            grid.innerHTML = '';
+            if(!lista || lista.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #777; padding: 2rem;">¡Sé el primero en registrar una mascota! Aún no hay perfiles con esos filtros en la nube.</p>';
+                return;
+            }
+            lista.forEach(m => {
+                const esConcretado = m.estado === 'concretado';
+                const card = document.createElement('div');
+                card.className = 'profile-card';
+                card.innerHTML = `
+                    <div class="profile-img">
+                        ${esConcretado ? '<span class="badge-concretado">¡Match Concretado! 🎉</span>' : `<span class="badge-type">${m.especie}</span>`}
+                        <img src="${m.img}" alt="${m.nombre}" onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500'">
+                    </div>
+                    <div class="profile-info">
+                        <h3>${m.nombre} <span>${m.raza}</span></h3>
+                        <p>${m.descripcion}</p>
+                        <div class="profile-footer">
+                            <span class="location"><i class="fa-solid fa-location-dot"></i> ${m.barrio}, ${m.ciudad}</span>
+                            ${esConcretado ? 
+                                '<button class="btn-concretado-disabled" disabled>Pareja Encontrada</button>' : 
+                                `<button onclick="simularInteresYContactar('${m.nombre}', '${m.whatsapp}')" class="btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Contactar</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function abrirModalRegistro() { document.getElementById('modalRegistro').style.display = 'flex'; }
+        function cerrarModalRegistro() { document.getElementById('modalRegistro').style.display = 'none'; }
+        
+        function simularInteresYContactar(nombreMascota, numeroDuenio) {
+            document.getElementById('modalPago').style.display = 'flex';
+        }
+
+        function cerrarModalPago() { document.getElementById('modalPago').style.display = 'none'; }
+        function verInteresadosGratis() { cerrarModalPago(); document.getElementById('modalInteresados').style.display = 'flex'; }
+        function cerrarModalInteresados() { document.getElementById('modalInteresados').style.display = 'none'; }
+
+        async function guardarMascotaNube(event) {
+            event.preventDefault();
+            const archivoInput = document.getElementById('fotoArchivo');
+            
+            if (archivoInput.files && archivoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const nuevaMascota = {
+                        nombre: document.getElementById('nombre').value,
+                        especie: document.getElementById('especie').value,
+                        raza: document.getElementById('raza').value,
+                        img: e.target.result,
+                        ciudad: document.getElementById('ciudad').value,
+                        barrio: document.getElementById('barrio').value,
+                        descripcion: document.getElementById('descripcion').value,
+                        whatsapp: document.getElementById('whatsapp').value,
+                        estado: "activo"
+                    };
+
+                    const { data, error } = await supabaseClient.from('mascotas').insert([nuevaMascota]);
+                    
+                    if (error) {
+                        alert('Error al guardar en la nube: ' + error.message);
+                    } else {
+                        alert('¡Tu mascota se publicó con éxito en la plataforma!');
+                        cerrarModalRegistro();
+                        document.getElementById('formMascota').reset();
+                        cargarMascotasNube();
+                    }
+                };
+                reader.readAsDataURL(archivoInput.files[0]);
+            }
+        }
+
+        function copiarEnlace() {
+            const input = document.getElementById('refLink');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert('¡Enlace de referido copiado! Compártelo con tus amigos.');
+        }
+
+        window.onload = () => cargarMascotasNube();
+    </script>
+</body>
+</html>
