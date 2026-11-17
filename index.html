@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO PRINCIPAL Y PALABRAS CLAVE INTERNACIONALES -->
+    <title>PetMatch | Emparejamiento de Mascotas, Buscar Pareja para Perros y Gatos, Control Veterinario y Tienda</title>
+    <meta name="description" content="Encuentra novio, novia o pareja ideal para tu perro o gato en Ecuador y Latinoamérica. Plataforma gratuita de emparejamiento responsable de mascotas, consejos veterinarios, calendario de vacunas, amigos para paseos y tienda de accesorios.">
+    <meta name="keywords" content="buscar pareja para mascotas, emparejamiento de mascotas, novio para mi perro, novia para mi gato, citas para perros y gatos, cruza responsable, consejos cuidado mascotas, control veterinario mascotas, calendario vacunas perros gatos, amigos para pasear perros, buscar pareja para perro Ecuador, tienda de accesorios para mascotas, PetMatch">
+    <meta name="author" content="PetMatch">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://petmatch-ecuador.github.io/petmatch/">
+
+    <!-- OPEN GRAPH -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PetMatch">
+    <meta property="og:title" content="PetMatch | Encuentra Pareja, Consejos Veterinarios y Amigos para tu Mascota">
+    <meta property="og:description" content="Conecta de forma segura con dueños responsables para emparejamiento de perros y gatos, lee consejos de cuidado, lleva el control de vacunas y compra accesorios en nuestra tienda.">
+    <meta property="og:url" content="https://petmatch-ecuador.github.io/petmatch/">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1534361960057-19889db9621e?w=1200">
+    <meta property="og:locale" content="es_LA">
+
+    <!-- DATOS ESTRUCTURADOS PARA GOOGLE (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "PetMatch",
+      "alternateName": ["PetMatch Ecuador", "Emparejamiento de Mascotas", "Buscar Pareja para Mascotas"],
+      "url": "https://petmatch-ecuador.github.io/petmatch/",
+      "description": "Comunidad y plataforma online para emparejamiento de perros y gatos, consejos de bienestar animal, control veterinario de vacunas y desparasitación, búsqueda de amigos para paseos y tienda de accesorios para mascotas.",
+      "inLanguage": "es",
+      "areaServed": ["Ecuador", "Colombia", "Perú", "México", "España"]
+    }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #e63946;
+            --secondary: #ff6b6b;
+            --dark: #1e293b;
+            --sidebar-bg: #f8fafc;
+            --bg-main: #ffffff;
+            --gray: #e2e8f0;
+            --success: #28a745;
+            --info: #2563eb;
+            --teal: #0d9488;
+            --amber: #d97706;
+            --shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--dark); -webkit-tap-highlight-color: transparent; }
+
+        /* ESTRUCTURA PRINCIPAL ESTILO APP STORE / SIDEBAR */
+        .app-shell { display: flex; min-height: 100vh; flex-direction: column; }
+        @media(min-width: 900px) {
+            .app-shell { flex-direction: row; }
+        }
+
+        /* OVERLAY MÓVIL PARA MENÚ LATERAL */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            z-index: 199;
+            backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.open { display: block; }
+        @media(min-width: 900px) { .sidebar-overlay { display: none !important; } }
+
+        /* BARRA LATERAL IZQUIERDA (CAJÓN EN MÓVIL, FIJA EN ESCRITORIO) */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -285px;
+            width: 270px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--gray);
+            padding: 1.2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            z-index: 200;
+            overflow-y: auto;
+            transition: left 0.25s ease;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+        }
+        .sidebar.open { left: 0; }
+
+        @media(min-width: 900px) {
+            .sidebar {
+                position: sticky;
+                left: 0;
+                width: 265px;
+                min-width: 265px;
+                padding: 1.4rem 1.1rem;
+                box-shadow: none;
+            }
+        }
+
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; }
+        .brand-logo { display: flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--dark); font-weight: 800; font-size: 1.18rem; cursor: pointer; }
+        .brand-icon { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 3px 8px rgba(230,57,70,0.3); flex-shrink: 0; }
+        .close-sidebar-btn { background: #e2e8f0; border: none; width: 30px; height: 30px; border-radius: 8px; font-size: 1.1rem; color: var(--dark); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        @media(min-width: 900px) { .close-sidebar-btn { display: none; } }
+
+        .sidebar-search { position: relative; }
+        .sidebar-search i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem; }
+        .sidebar-search input { width: 100%; padding: 0.5rem 0.7rem 0.5rem 2.1rem; border: 1px solid var(--gray); border-radius: 9px; background: #edf2f7; font-size: 0.85rem; outline: none; transition: all 0.2s; }
+        .sidebar-search input:focus { background: white; border-color: var(--info); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+
+        .sidebar-group-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin: 0.5rem 0 0.15rem 0.5rem; }
+
+        .sidebar-menu { display: flex; flex-direction: column; gap: 0.25rem; list-style: none; }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.58rem 0.8rem;
+            border-radius: 9px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #334155;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            transition: background 0.15s, color 0.15s;
+        }
+        .menu-item i { width: 18px; text-align: center; font-size: 0.95rem; color: var(--info); }
+        .menu-item:hover { background: #e2e8f0; }
+        .menu-item.active { background: #e2e8f0; color: var(--dark); font-weight: 700; }
+        .menu-item.active i { color: var(--primary); }
+
+        .pro-tag-mini { margin-left: auto; background: #fef3c7; color: #b45309; font-size: 0.65rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 6px; border: 1px solid #fde68a; }
+
+        .sidebar-footer-box { display: flex; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--gray); flex-direction: column; gap: 0.5rem; }
+        .user-pill { font-size: 0.78rem; background: #e2e8f0; padding: 0.45rem 0.7rem; border-radius: 8px; color: #334155; font-weight: 600; word-break: break-all; }
+
+        /* ÁREA DE CONTENIDO DERECHA */
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #ffffff; }
+
+        /* BARRA SUPERIOR ÚNICA COMPACTA */
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--gray); background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 90; gap: 0.4rem; }
+        @media(min-width: 900px) { .topbar { padding: 0.75rem 1.4rem; } }
+
+        .topbar-left { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
+        .mobile-menu-btn { background: #f1f5f9; border: 1px solid var(--gray); width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; color: var(--dark); cursor: pointer; flex-shrink: 0; }
+        .mobile-brand { display: flex; align-items: center; gap: 0.45rem; text-decoration: none; color: var(--dark); font-weight: 800; font-size: 1.05rem; cursor: pointer; }
+        .topbar-location { display: none; font-size: 0.8rem; color: #64748b; font-weight: 600; align-items: center; gap: 0.35rem; }
+        @media(min-width: 900px) {
+            .mobile-menu-btn, .mobile-brand { display: none; }
+            .topbar-location { display: flex; }
+        }
+
+        .topbar-actions { display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0; }
+
+        .btn-primary { background: var(--primary); color: white; padding: 0.45rem 0.85rem; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.8rem; box-shadow: 0 3px 10px rgba(230,57,70,0.25); border: none; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.35rem; }
+        .btn-blue { background: var(--info); color: white; padding: 0.45rem 0.85rem; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.8rem; border: none; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.35rem; }
+        .btn-outline { background: #f1f5f9; color: var(--dark); padding: 0.45rem 0.85rem; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.8rem; border: 1px solid var(--gray); cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.35rem; }
+        .btn-amber { background: #f59e0b; color: #1e293b; padding: 0.45rem 0.9rem; border-radius: 50px; font-weight: 800; font-size: 0.8rem; border: none; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.35rem; }
+
+        /* BOTÓN DE REGRESO UNIFICADO: "Volver a inicio" */
+        .section-back-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.65rem;
+            border-bottom: 1px solid var(--gray);
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .btn-back-home {
+            background: #f1f5f9;
+            color: var(--dark);
+            border: 1px solid #cbd5e1;
+            padding: 0.45rem 0.95rem;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .btn-back-home:hover { background: #e2e8f0; }
+        .section-breadcrumb { font-size: 0.78rem; color: #64748b; font-weight: 600; }
+
+        /* BANNER DE AVISO DE CADUCIDAD DE SUSCRIPCIÓN PRO */
+        .expiry-banner {
+            display: none;
+            background: linear-gradient(90deg, #fef3c7, #fde68a);
+            border-bottom: 1px solid #f59e0b;
+            color: #78350f;
+            padding: 0.75rem 1.1rem;
+            font-size: 0.84rem;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .expiry-banner.urgent {
+            background: linear-gradient(90deg, #fee2e2, #fecaca);
+            border-bottom-color: var(--primary);
+            color: #7f1d1d;
+        }
+        .expiry-banner-text { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; line-height: 1.35; }
+
+        /* CONTROL DE VISTAS */
+        .view-section { display: none; padding: 1rem 0.95rem 4.5rem; max-width: 1120px; width: 100%; margin: 0 auto; animation: fadeIn 0.2s ease-in; }
+        .view-section.active { display: block; }
+        @media(min-width: 900px) { .view-section { padding: 1.8rem 2.2rem 3rem; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CABECERA CON IMAGEN DE FONDO E ICONO DE HUELLITA */
+        .app-banner-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(30, 41, 59, 0.86)), url('https://images.unsplash.com/photo-1534361960057-19889db9621e?w=1200') no-repeat center center/cover;
+            border-radius: 16px;
+            padding: 1.15rem;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin-bottom: 1.1rem;
+            box-shadow: 0 10px 25px rgba(30,41,59,0.18);
+        }
+        @media(min-width: 680px) {
+            .app-banner-card { flex-direction: row; align-items: center; padding: 2rem; gap: 1.3rem; border-radius: 18px; margin-bottom: 1.4rem; }
+        }
+        .app-banner-top-row { display: flex; align-items: center; gap: 0.85rem; }
+        .app-big-icon {
+            width: 56px;
+            height: 56px;
+            background: white;
+            color: var(--primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.85rem;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+        @media(min-width: 680px) {
+            .app-big-icon { width: 84px; height: 84px; border-radius: 20px; font-size: 2.7rem; }
+        }
+        .app-banner-title-mobile h1 { font-size: 1.15rem; font-weight: 800; line-height: 1.22; text-shadow: 0 2px 4px rgba(0,0,0,0.35); }
+        @media(min-width: 680px) {
+            .app-banner-title-mobile h1 { font-size: 1.75rem; margin-bottom: 0.4rem; }
+        }
+        .app-banner-info p { font-size: 0.83rem; color: #f1f5f9; margin-bottom: 0.8rem; line-height: 1.4; }
+        @media(min-width: 680px) {
+            .app-banner-info p { font-size: 0.9rem; margin-bottom: 0.95rem; line-height: 1.45; }
+        }
+        .app-banner-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+        /* MÉTRICAS RÁPIDAS ESTILO APP STORE */
+        .metrics-strip {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.65rem;
+            padding: 0.75rem 0;
+            border-top: 1px solid var(--gray);
+            border-bottom: 1px solid var(--gray);
+            margin-bottom: 1.1rem;
+            text-align: center;
+        }
+        @media(min-width: 640px) { .metrics-strip { grid-template-columns: repeat(4, 1fr); gap: 0.8rem; padding: 0.9rem 0; margin-bottom: 1.4rem; } }
+        .metric-box span.m-label { display: block; font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+        .metric-box strong { display: block; font-size: 0.95rem; color: #475569; margin: 0.1rem 0; }
+        @media(min-width: 640px) { .metric-box strong { font-size: 1.05rem; margin: 0.15rem 0; } }
+        .metric-box span.m-sub { font-size: 0.7rem; color: #94a3b8; }
+
+        /* PÍLDORAS DE CATEGORÍA RÁPIDA */
+        .category-pills { display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.9rem; }
+        .cat-pill { padding: 0.4rem 0.85rem; border-radius: 50px; border: 1px solid var(--gray); background: #f8fafc; color: #334155; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.2s; }
+        .cat-pill.active { background: #1e293b; color: white; border-color: #1e293b; }
+
+        /* FILTROS COMPACTOS */
+        .filters-bar { background: #f8fafc; border: 1px solid var(--gray); padding: 0.8rem; border-radius: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1.3rem; }
+        @media(min-width: 768px) { .filters-bar { grid-template-columns: repeat(5, 1fr); align-items: end; padding: 0.9rem; gap: 0.7rem; margin-bottom: 1.5rem; } }
+        .filter-group.full-mobile { grid-column: 1 / -1; }
+        @media(min-width: 768px) { .filter-group.full-mobile { grid-column: auto; } }
+        .filter-group label { display: block; font-size: 0.68rem; font-weight: 700; margin-bottom: 0.2rem; color: #64748b; text-transform: uppercase; }
+        .filter-group select, .filter-group input { width: 100%; padding: 0.5rem; border: 1px solid var(--gray); border-radius: 8px; outline: none; background: #fff; font-size: 0.83rem; }
+
+        #expansionAlert { display: none; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; }
+
+        /* TARJETAS DE MASCOTAS */
+        .profiles-grid { display: grid; grid-template-columns: 1fr; gap: 1.1rem; }
+        @media(min-width: 580px) { .profiles-grid { grid-template-columns: repeat(2, 1fr); gap: 1.3rem; } }
+        @media(min-width: 1050px) { .profiles-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .profile-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--gray); transition: transform 0.2s; }
+        .profile-card:hover { transform: translateY(-2px); }
+        .profile-img { height: 205px; background: #edf2f7; position: relative; display: flex; align-items: center; justify-content: center; color: #a0aec0; overflow: hidden; }
+        .profile-img img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .badge-type { position: absolute; top: 10px; left: 10px; background: rgba(15,23,42,0.8); color: white; padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: bold; z-index: 2; }
+        .badge-amigos { position: absolute; top: 10px; left: 10px; background: var(--info); color: white; padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: bold; z-index: 2; }
+        .badge-concretado { position: absolute; top: 10px; left: 10px; background: var(--success); color: white; padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: bold; z-index: 2; }
+        
+        .like-badge { position: absolute; top: 10px; right: 10px; background: white; color: #94a3b8; padding: 0.3rem 0.65rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; gap: 0.3rem; border: none; }
+        .like-badge.liked { color: var(--primary); background: #fff5f5; }
+
+        .profile-info { padding: 1.05rem; }
+        .profile-info h3 { font-size: 1.05rem; margin-bottom: 0.3rem; display: flex; justify-content: space-between; align-items: center; color: var(--dark); }
+        .profile-info h3 span { font-size: 0.78rem; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 0.15rem 0.5rem; border-radius: 6px; }
+        .profile-info p { color: #475569; font-size: 0.85rem; margin-bottom: 0.8rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .profile-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray); padding-top: 0.8rem; margin-top: auto; flex-wrap: wrap; gap: 0.5rem; }
+        .location { font-size: 0.8rem; color: #64748b; display: flex; align-items: center; gap: 0.25rem; font-weight: 500; }
+        
+        .btn-whatsapp { background: #25D366; color: white; padding: 0.4rem 0.85rem; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: bold; display: inline-flex; align-items: center; gap: 0.3rem; border: none; cursor: pointer; }
+        .btn-review-trigger { background: var(--info); color: white; padding: 0.35rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: bold; border: none; cursor: pointer; }
+        .btn-concretado-disabled { background: #e2e8f0; color: #94a3b8; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; font-weight: bold; border: none; cursor: not-allowed; }
+
+        /* VISTA 2: CALENDARIO VETERINARIO (FREE VS PRO AUTOMÁTICO) */
+        .vet-container { background: white; border-radius: 14px; border: 1px solid var(--gray); box-shadow: var(--shadow); padding: 1.2rem; border-top: 4px solid var(--teal); }
+        @media(min-width: 768px) { .vet-container { padding: 1.5rem; } }
+        .vet-header { margin-bottom: 1.1rem; }
+        .vet-header h2 { color: var(--teal); font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; flex-wrap: wrap; }
+        .vet-header p { font-size: 0.86rem; color: #475568; line-height: 1.45; }
+
+        .vet-plan-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            padding: 0.75rem 0.95rem;
+            border-radius: 10px;
+            margin-bottom: 1.2rem;
+            font-size: 0.83rem;
+            font-weight: 600;
+        }
+        .vet-plan-status.free-mode { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+        .vet-plan-status.pro-mode { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+
+        .vet-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media(min-width: 850px) { .vet-grid { grid-template-columns: 1fr 1.3fr; } }
+        
+        .vet-form-box { background: #f0fdfa; padding: 1.1rem; border-radius: 12px; border: 1px solid #ccfbf1; }
+        .vet-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 0.75rem; }
+        @media(max-width: 480px) { .vet-form-row { grid-template-columns: 1fr; } }
+        .vet-form-box label { display: block; font-size: 0.75rem; font-weight: 700; color: #115e59; margin-bottom: 0.25rem; }
+        .vet-form-box input, .vet-form-box select { width: 100%; padding: 0.6rem; border: 1px solid #99f6e4; border-radius: 8px; font-size: 0.85rem; background: white; outline: none; }
+        
+        .email-reminder-box { background: white; border: 1px solid #99f6e4; border-radius: 8px; padding: 0.65rem 0.8rem; margin-bottom: 0.75rem; display: flex; flex-direction: column; gap: 0.45rem; }
+        .email-reminder-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: #0f766e; cursor: pointer; }
+        .email-reminder-check input { width: auto; accent-color: var(--teal); }
+
+        .btn-vet { background: var(--teal); color: white; border: none; padding: 0.72rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; width: 100%; margin-top: 0.3rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+
+        .vet-list-box { display: flex; flex-direction: column; gap: 0.75rem; }
+        .vet-item { border: 1px solid var(--gray); border-left: 4px solid var(--teal); border-radius: 10px; padding: 0.9rem; background: #ffffff; display: flex; flex-direction: column; gap: 0.45rem; }
+        .vet-item.urgente { border-left-color: var(--primary); background: #fff5f5; }
+        .vet-item-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .vet-item-title { font-weight: 700; font-size: 0.92rem; color: var(--dark); }
+        .vet-badge { font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 20px; font-weight: 700; background: #ccfbf1; color: #115e59; }
+        .vet-item.urgente .vet-badge { background: #fed7d7; color: #9b2c2c; }
+        .vet-item-meta { font-size: 0.8rem; color: #475569; line-height: 1.45; }
+        .auto-alert-pill { display: inline-flex; align-items: center; gap: 0.35rem; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 0.22rem 0.55rem; border-radius: 6px; font-size: 0.74rem; font-weight: 700; margin-top: 0.25rem; }
+        .vet-item-actions { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-top: 0.3rem; }
+        .btn-gcal { background: var(--info); color: white; text-decoration: none; font-size: 0.75rem; font-weight: 600; padding: 0.38rem 0.65rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; border: none; cursor: pointer; }
+        .btn-send-msg { background: var(--teal); color: white; text-decoration: none; font-size: 0.75rem; font-weight: 600; padding: 0.38rem 0.65rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; border: none; cursor: pointer; }
+        .btn-gcal.locked, .btn-send-msg.locked { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+        .btn-vet-del { background: #f1f5f9; color: #475569; border: none; font-size: 0.75rem; font-weight: 600; padding: 0.38rem 0.65rem; border-radius: 6px; cursor: pointer; }
+
+        /* VISTA 3: GUÍA, FAQ, RESEÑAS Y REFERIDOS */
+        .info-grid { display: grid; grid-template-columns: 1fr; gap: 1.3rem; margin-bottom: 2rem; }
+        @media(min-width: 768px) { .info-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; } }
+        .info-card { background: #ffffff; padding: 1.4rem; border-radius: 14px; border: 1px solid var(--gray); box-shadow: var(--shadow); }
+        .info-card h2 { color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.45rem; }
+        .steps-container { display: flex; flex-direction: column; gap: 0.95rem; }
+        .step-row { display: flex; gap: 0.85rem; align-items: flex-start; }
+        .step-num { background: var(--primary); color: white; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.78rem; flex-shrink: 0; }
+        .step-txt h5 { font-size: 0.94rem; color: var(--dark); margin-bottom: 0.15rem; }
+        .step-txt p { font-size: 0.83rem; color: #475569; line-height: 1.4; }
+        .faq-item { margin-bottom: 0.85rem; border-bottom: 1px solid var(--gray); padding-bottom: 0.85rem; }
+        .faq-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .faq-item h4 { font-size: 0.94rem; color: var(--dark); margin-bottom: 0.25rem; }
+        .faq-item p { font-size: 0.83rem; color: #475569; line-height: 1.4; }
+
+        .referral-banner { background: #ffffff; border-radius: 14px; padding: 1.3rem; box-shadow: var(--shadow); border: 1px solid var(--gray); border-left: 5px solid var(--primary); margin-top: 2rem; }
+        .referral-banner h3 { color: var(--primary); font-size: 1.1rem; margin-bottom: 0.3rem; }
+        .referral-banner p { font-size: 0.86rem; color: #475569; line-height: 1.45; margin-bottom: 0.9rem; }
+        .referral-input-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .referral-input-group input { padding: 0.6rem; border: 1px solid var(--gray); border-radius: 8px; font-size: 0.85rem; flex: 1; outline: none; background: #f8fafc; min-width: 180px; }
+        .btn-copy { background: var(--primary); color: white; border: none; padding: 0.6rem 1.1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+
+        /* VISTA 4: CONSEJOS DE CUIDADO */
+        .tips-header { margin-bottom: 1.3rem; }
+        .tips-header h2 { font-size: 1.25rem; color: var(--dark); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.5rem; }
+        .tips-header p { font-size: 0.88rem; color: #475569; line-height: 1.45; }
+        .tips-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; margin-bottom: 1.8rem; }
+        @media(min-width: 768px) { .tips-grid { grid-template-columns: repeat(2, 1fr); gap: 1.3rem; } }
+        .tip-card { background: white; border-radius: 14px; overflow: hidden; border: 1px solid var(--gray); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+        .tip-card-img { height: 170px; overflow: hidden; position: relative; }
+        .tip-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .tip-tag { position: absolute; top: 10px; left: 10px; background: var(--amber); color: white; padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+        .tip-body { padding: 1.15rem; }
+        .tip-body h3 { font-size: 1.02rem; color: var(--dark); margin-bottom: 0.45rem; }
+        .tip-body p { font-size: 0.84rem; color: #475569; line-height: 1.5; margin-bottom: 0.7rem; }
+        .tip-list { padding-left: 1.1rem; font-size: 0.82rem; color: #334155; display: flex; flex-direction: column; gap: 0.3rem; }
+
+        /* MODALES */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.65); z-index: 1000; justify-content: center; align-items: center; padding: 0.8rem; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 1.4rem; border-radius: 16px; width: 100%; max-width: 480px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; max-height: 92vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .modal-header h2 { color: var(--primary); font-size: 1.15rem; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
+        
+        .form-group { margin-bottom: 0.8rem; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.3rem; color: #475569; }
+        .form-group label .required-star { color: var(--primary); margin-left: 2px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.65rem; border: 1px solid var(--gray); border-radius: 8px; outline: none; font-size: 0.9rem; background: #fff; }
+        .form-group textarea { resize: vertical; height: 75px; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 0.75rem; border: none; border-radius: 8px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-top: 0.8rem; }
+        
+        .camera-upload-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: #1e293b; color: white; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; text-align: center; }
+        #fotoArchivo { display: none; }
+        #fileChosenName { font-size: 0.75rem; color: #64748b; margin-top: 0.3rem; display: block; font-style: italic; }
+
+        .pay-box p { margin-bottom: 0.85rem; color: #475569; line-height: 1.4; font-size: 0.88rem; }
+        .pro-benefits-list { background: #f8fafc; border: 1px solid var(--gray); border-radius: 10px; padding: 0.75rem 0.9rem; margin-bottom: 0.95rem; font-size: 0.82rem; color: #334155; display: flex; flex-direction: column; gap: 0.35rem; }
+        .payment-methods { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+        .payment-option { border: 2px solid var(--gray); border-radius: 10px; padding: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; }
+        .payment-option i { font-size: 1.3rem; color: var(--primary); }
+        .payment-option h4 { font-size: 0.9rem; color: var(--dark); margin-bottom: 0.1rem; }
+        .payment-option span { font-size: 0.75rem; color: #64748b; }
+
+        .btn-free-check { background: #f1f5f9; color: #475569; padding: 0.65rem 1rem; border-radius: 8px; font-weight: 600; width: 100%; border: none; font-size: 0.85rem; cursor: pointer; text-align: center; margin-top: 0.5rem; }
+        .contact-caution-tip { font-size: 0.75rem; color: #475569; background: #f8fafc; padding: 0.7rem; border-radius: 8px; margin-top: 0.8rem; line-height: 1.4; border-left: 3px solid var(--info); font-style: italic; }
+
+        .float-whatsapp { position: fixed; bottom: 72px; right: 14px; background: #25D366; color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(37,211,102,0.4); z-index: 99; text-decoration: none; }
+        @media(min-width: 900px) { .float-whatsapp { bottom: 18px; right: 18px; width: 52px; height: 52px; } }
+    </style>
+</head>
+<body>
+
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileSidebar(false)"></div>
+
+<div class="app-shell">
+    <!-- MENÚ LATERAL IZQUIERDO (CAJÓN EN CELULAR, FIJO EN COMPUTADORA) -->
+    <aside id="appSidebar" class="sidebar">
+        <div class="sidebar-header">
+            <a onclick="volverAlInicio()" class="brand-logo">
+                <div class="brand-icon"><i class="fa-solid fa-paw"></i></div>
+                <span>PetMatch</span>
+            </a>
+            <button class="close-sidebar-btn" onclick="toggleMobileSidebar(false)" aria-label="Cerrar menú">&times;</button>
+        </div>
+
+        <div class="sidebar-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="sidebarQuickSearch" placeholder="Buscar raza, ciudad..." onkeyup="sincronizarBusquedaRapida(this.value)">
+        </div>
+
+        <div class="sidebar-group-title">Explorar</div>
+        <ul class="sidebar-menu">
+            <li>
+                <button id="nav-explorar" class="menu-item active" onclick="cambiarVista('vista-explorar', this)">
+                    <i class="fa-solid fa-heart"></i> Parejas y Amigos
+                </button>
+            </li>
+            <li>
+                <button id="nav-veterinaria" class="menu-item" onclick="cambiarVista('vista-veterinaria', this)">
+                    <i class="fa-solid fa-syringe"></i> Control Veterinario
+                    <span class="pro-tag-mini">PRO ⭐</span>
+                </button>
+            </li>
+            <li>
+                <button id="nav-consejos" class="menu-item" onclick="cambiarVista('vista-consejos', this)">
+                    <i class="fa-solid fa-book-medical"></i> Consejos y Cuidados
+                </button>
+            </li>
+            <li>
+                <a href="tienda.html" class="menu-item">
+                    <i class="fa-solid fa-bag-shopping"></i> Tienda Oficial 🛍️
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-group-title">Comunidad</div>
+        <ul class="sidebar-menu">
+            <li>
+                <button id="nav-guia" class="menu-item" onclick="cambiarVista('vista-guia', this)">
+                    <i class="fa-solid fa-star"></i> Cómo Funciona y Reseñas
+                </button>
+            </li>
+            <li>
+                <button id="nav-referidos" class="menu-item" onclick="cambiarVista('vista-referidos', this)">
+                    <i class="fa-solid fa-gift"></i> Referidos Pro ⭐
+                </button>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer-box">
+            <div id="userStatus" class="user-pill">Visitante (Plan Free)</div>
+            <div id="proExpirySidebar" style="font-size:0.72rem; color:#64748b; padding:0 0.2rem;"></div>
+            <button onclick="abrirModalAuth()" id="btnAuthSidebar" class="btn-outline" style="width:100%; justify-content:center;">Iniciar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+        <!-- BARRA SUPERIOR ÚNICA -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-btn" onclick="toggleMobileSidebar(true)" aria-label="Abrir menú">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <a onclick="volverAlInicio()" class="mobile-brand">
+                    <div class="brand-icon" style="width:28px; height:28px; font-size:0.9rem;"><i class="fa-solid fa-paw"></i></div>
+                    <span>PetMatch</span>
+                </a>
+                <div class="topbar-location">
+                    <i class="fa-solid fa-earth-americas" style="color: var(--success);"></i>
+                    <span>PetMatch Ecuador & Latinoamérica</span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button onclick="abrirModalAuth()" id="btnAuthTop" class="btn-outline">Ingresar</button>
+                <button onclick="abrirModalRegistro()" class="btn-primary"><i class="fa-solid fa-plus"></i> Publicar</button>
+            </div>
+        </div>
+
+        <!-- BANNER INFORMATIVO DE CADUCIDAD DE SUSCRIPCIÓN PRO -->
+        <div id="expiryBanner" class="expiry-banner">
+            <div class="expiry-banner-text">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="expiryBannerMsg">Tu membresía PetMatch Pro está próxima a caducar. Renueva por $5.00/año para no perder tus beneficios.</span>
+            </div>
+            <button onclick="abrirModalPro('Tu membresía PetMatch Pro está por vencer o ha caducado. Renueva hoy por solo $5.00 USD/año para conservar tus recordatorios veterinarios al correo y contactos directos por WhatsApp.')" class="btn-primary">
+                <i class="fa-solid fa-crown"></i> Renovar Beneficios Pro
+            </button>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- VISTA 1: EXPLORAR PAREJAS Y AMIGOS (PRINCIPAL)            -->
+        <!-- ========================================================= -->
+        <section id="vista-explorar" class="view-section active">
+            
+            <!-- CABECERA COMPACTA CON HUELLITA -->
+            <div class="app-banner-card">
+                <div class="app-banner-top-row">
+                    <div class="app-big-icon">
+                        <i class="fa-solid fa-paw"></i>
+                    </div>
+                    <div class="app-banner-title-mobile">
+                        <h1>PetMatch: Encuentra Pareja o Amigos para tu Mascota</h1>
+                    </div>
+                </div>
+                <div class="app-banner-info">
+                    <p>Conecta de forma segura con dueños responsables en Ecuador y Latinoamérica. Cruza ética para perros y gatos, consejos veterinarios o compañeros ideales para paseos diarios.</p>
+                    <div class="app-banner-btns">
+                        <button onclick="abrirModalRegistro()" class="btn-primary"><i class="fa-solid fa-camera"></i> Registrar Mascota</button>
+                        <a href="tienda.html" class="btn-blue"><i class="fa-solid fa-bag-shopping"></i> Tienda</a>
+                        <button onclick="compartirPlataforma()" class="btn-outline"><i class="fa-solid fa-share-nodes"></i> Compartir</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÉTRICAS ESTILO APP STORE -->
+            <div class="metrics-strip">
+                <div class="metric-box">
+                    <span class="m-label">Comunidad</span>
+                    <strong>100% Verificada</strong>
+                    <span class="m-sub">Dueños responsables</span>
+                </div>
+                <div class="metric-box">
+                    <span class="m-label">Categoría</span>
+                    <strong>Perros y Gatos</strong>
+                    <span class="m-sub">Parejas y paseos</span>
+                </div>
+                <div class="metric-box">
+                    <span class="m-label">Salud & Bienestar</span>
+                    <strong>Control Vet + Guías</strong>
+                    <span class="m-sub">Vacunas y consejos</span>
+                </div>
+                <div class="metric-box">
+                    <span class="m-label">Registro</span>
+                    <strong>Gratis</strong>
+                    <span class="m-sub">Publicación inmediata</span>
+                </div>
+            </div>
+
+            <div id="expansionAlert">
+                🌍 ¡PetMatch se está preparando para llegar muy pronto a <span id="targetPais"></span>! Regístrate para unirte a la lista de espera prioritaria.
+            </div>
+
+            <!-- CATEGORÍAS RÁPIDAS -->
+            <div class="category-pills">
+                <span style="font-size: 0.82rem; font-weight: 700; color: #64748b;">Categorías:</span>
+                <button class="cat-pill active" id="pill-todas" onclick="filtrarPorCategoriaRapida('', this)">🐾 Todas</button>
+                <button class="cat-pill" id="pill-perros" onclick="filtrarPorCategoriaRapida('Perro', this)">🐶 Perros</button>
+                <button class="cat-pill" id="pill-gatos" onclick="filtrarPorCategoriaRapida('Gato', this)">🐱 Gatos</button>
+            </div>
+
+            <!-- FILTROS AVANZADOS -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>País</label>
+                    <select id="filtroPais" onchange="comprobarPaisExpansion(); cargarMascotasNube();">
+                        <option value="">Todos</option>
+                        <option value="Ecuador" selected>Ecuador</option>
+                        <option value="Colombia">Colombia</option>
+                        <option value="Perú">Perú</option>
+                        <option value="México">México</option>
+                        <option value="España">España</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Objetivo</label>
+                    <select id="filtroObjetivo" onchange="cargarMascotasNube()">
+                        <option value="">Todos</option>
+                        <option value="Cruza Responsable">Cruza Responsable</option>
+                        <option value="Amigos, Paseos y Juegos">Amigos y Paseos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sexo</label>
+                    <select id="filtroSexo" onchange="cargarMascotasNube()">
+                        <option value="">Cualquiera</option>
+                        <option value="Macho">Macho</option>
+                        <option value="Hembra">Hembra</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Ciudad / Raza</label>
+                    <input type="text" id="filtroBusqueda" placeholder="Quito, Golden..." onkeyup="cargarMascotasNube()">
+                </div>
+                <div class="filter-group full-mobile">
+                    <button onclick="cargarMascotasNube()" class="btn-primary" style="width:100%; border-radius:8px; justify-content:center; padding:0.55rem;">
+                        <i class="fa-solid fa-magnifying-glass"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
+            <!-- GRID DE MASCOTAS -->
+            <div id="gridMascotas" class="profiles-grid"></div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- VISTA 2: CALENDARIO DE CONTROL VETERINARIO (FREE / PRO)   -->
+        <!-- ========================================================= -->
+        <section id="vista-veterinaria" class="view-section">
+            <div class="section-back-bar">
+                <button class="btn-back-home" onclick="volverAlInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a inicio
+                </button>
+                <span class="section-breadcrumb">Inicio / Control Veterinario</span>
+            </div>
+
+            <div class="vet-container">
+                <div class="vet-header">
+                    <h2>
+                        <i class="fa-solid fa-syringe"></i> Calendario de Control Veterinario (Vacunas y Desparasitación)
+                        <span style="background:#fef3c7; color:#b45309; font-size:0.72rem; padding:0.2rem 0.6rem; border-radius:20px; border:1px solid #fde68a;">⭐ Beneficio Nivel Pro</span>
+                    </h2>
+                    <p>Lleva el historial médico de tu perro o gato. En el <strong>Plan Free</strong> puedes probar con <strong>1 control básico</strong>. Con <strong>PetMatch Pro ($5.00/año)</strong> obtienes registros ilimitados, <strong>envío automático de mensajes recordatorios a tu correo</strong> (3 días antes de cada cita) y sincronización con Google Calendar.</p>
+                </div>
+
+                <!-- BARRA DE ESTADO DE PLAN EN VETERINARIA -->
+                <div id="vetPlanBanner" class="vet-plan-status free-mode">
+                    <span id="vetPlanText">🔓 Plan Free: Puedes guardar 1 control veterinario de prueba. Actualiza a Nivel Pro para registros ilimitados y mensajes recordatorios automáticos.</span>
+                    <button id="btnUpgradeVet" onclick="abrirModalPro('El Calendario Veterinario completo con registros ilimitados y mensajes recordatorios automáticos al correo es un beneficio exclusivo de Nivel Pro ($5.00 USD/año).')" class="btn-amber">
+                        <i class="fa-solid fa-crown"></i> Activar Nivel Pro ($5)
+                    </button>
+                </div>
+
+                <div class="vet-grid">
+                    <form class="vet-form-box" onsubmit="agregarRecordatorioVet(event)">
+                        <div class="vet-form-row">
+                            <div>
+                                <label>Nombre de la Mascota *</label>
+                                <input type="text" id="vetMascota" required placeholder="Ej. Copito / Rocky">
+                            </div>
+                            <div>
+                                <label>Tipo de Control *</label>
+                                <select id="vetTipo" required>
+                                    <option value="Vacuna Anual / Refuerzo">Vacuna Anual / Refuerzo</option>
+                                    <option value="Desparasitación Interna">Desparasitación Interna</option>
+                                    <option value="Antipulgas y Garrapatas">Antipulgas y Garrapatas</option>
+                                    <option value="Consulta Veterinaria">Consulta Veterinaria</option>
+                                    <option value="Baño y Peluquería">Baño y Peluquería</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="vet-form-row">
+                            <div>
+                                <label>Fecha Aplicada / Actual *</label>
+                                <input type="date" id="vetFechaAplicada" required>
+                            </div>
+                            <div>
+                                <label>Próxima Fecha (Recordatorio) *</label>
+                                <input type="date" id="vetProximaFecha" required>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 0.7rem;">
+                            <label>Observaciones / Clínica Veterinaria</label>
+                            <input type="text" id="vetNotas" placeholder="Ej. Vacuna Séxtuple, peso 12 kg...">
+                        </div>
+
+                        <!-- OPCIÓN DE RECORDATORIO AUTOMÁTICO AL CORREO (EXCLUSIVO PRO) -->
+                        <div class="email-reminder-box">
+                            <label class="email-reminder-check">
+                                <input type="checkbox" id="vetAlertaCorreo" onchange="validarCheckCorreoPro(this)">
+                                <span>📧 Envío automático de mensaje recordatorio (3 días antes - Nivel Pro ⭐)</span>
+                            </label>
+                            <input type="email" id="vetCorreoDestino" placeholder="tu_correo@gmail.com (para envío automático)" style="font-size:0.82rem; padding:0.5rem;">
+                        </div>
+
+                        <button type="submit" class="btn-vet"><i class="fa-solid fa-plus"></i> Guardar y Programar Recordatorio</button>
+                    </form>
+
+                    <div>
+                        <h4 style="font-size: 0.92rem; color: var(--dark); margin-bottom: 0.7rem;"><i class="fa-solid fa-clock-rotate-left"></i> Próximos Controles Programados Automáticos</h4>
+                        <div id="listaControlesVet" class="vet-list-box"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <button class="btn-back-home" onclick="volverAlInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a inicio
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- VISTA 3: CONSEJOS Y CUIDADOS PARA MASCOTAS                -->
+        <!-- ========================================================= -->
+        <section id="vista-consejos" class="view-section">
+            <div class="section-back-bar">
+                <button class="btn-back-home" onclick="volverAlInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a inicio
+                </button>
+                <span class="section-breadcrumb">Inicio / Consejos y Cuidados</span>
+            </div>
+
+            <div class="tips-header">
+                <h2><i class="fa-solid fa-book-medical" style="color: var(--amber);"></i> Consejos para el Emparejamiento, Salud y Bienestar</h2>
+                <p>Guías prácticas para dueños responsables de perros y gatos antes de coordinar una cita, paseo o cruza en Ecuador y Latinoamérica.</p>
+            </div>
+
+            <div class="tips-grid">
+                <div class="tip-card">
+                    <div class="tip-card-img">
+                        <span class="tip-tag">Cruza Responsable</span>
+                        <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=700" alt="Pareja de perros saludables">
+                    </div>
+                    <div class="tip-body">
+                        <h3>1. Chequeo veterinario previo antes de buscar pareja</h3>
+                        <p>Antes de concretar el emparejamiento de tu perro o gato, confirma que ambos ejemplares gocen de buena salud y tengan sus vacunas al día.</p>
+                        <ul class="tip-list">
+                            <li>Carnet de vacunación vigente y desparasitación interna y externa reciente.</li>
+                            <li>Verificar compatibilidad de tamaño y raza para evitar complicaciones en el parto.</li>
+                            <li>Esperar a que la mascota alcance su madurez física (generalmente después del segundo celo).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-card-img">
+                        <span class="tip-tag" style="background: var(--info);">Primer Encuentro</span>
+                        <img src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=700" alt="Paseo seguro de perros en el parque">
+                    </div>
+                    <div class="tip-body">
+                        <h3>2. Cómo organizar una primera cita o paseo seguro</h3>
+                        <p>La primera impresión entre dos mascotas define si harán buena química como pareja o compañeros de juego.</p>
+                        <ul class="tip-list">
+                            <li>Elige siempre un parque público, abierto y neutral (como La Carolina o parques barriales seguros).</li>
+                            <li>Mantén a ambos perros con correa durante los primeros 10 minutos mientras se huelen con calma.</li>
+                            <li>Lleva agua fresca, premios y bolsas higiénicas para mantener una experiencia agradable.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-card-img">
+                        <span class="tip-tag" style="background: var(--teal);">Salud Preventiva</span>
+                        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=700" alt="Cuidado y vacunación de gatos y perros">
+                    </div>
+                    <div class="tip-body">
+                        <h3>3. Calendario de vacunas y desparasitación al día</h3>
+                        <p>Mantener un control periódico protege a tu mascota de enfermedades virales y parásitos al convivir con otros animales.</p>
+                        <ul class="tip-list">
+                            <li>Desparasita a tu perro o gato cada 3 meses según la recomendación de tu veterinario.</li>
+                            <li>Aplica refuerzos anuales de vacunas (Séxtuple/Antirrábica en perros; Triple Felina en gatos).</li>
+                            <li>Usa nuestra pestaña <strong>Control Veterinario</strong> para programar alertas automáticas en tu correo.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-card-img">
+                        <span class="tip-tag" style="background: var(--primary);">Socialización</span>
+                        <img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=700" alt="Socialización y juegos entre mascotas">
+                    </div>
+                    <div class="tip-body">
+                        <h3>4. Señales de compatibilidad y lenguaje corporal</h3>
+                        <p>Aprender a leer las señales de tu peludo te ayudará a saber si disfruta de la compañía o necesita un descanso.</p>
+                        <ul class="tip-list">
+                            <li>Cola relajada en movimiento suave y postura juguetona indican comodidad y aceptación.</li>
+                            <li>Si notas gruñidos, rigidez o intentos de esconderse, dales espacio sin forzar el contacto.</li>
+                            <li>Premia con caricias los comportamientos tranquilos y amigables durante el encuentro.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn-back-home" onclick="volverAlInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a inicio
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- VISTA 4: CÓMO FUNCIONA, FAQ, RESEÑAS Y REFERIDOS          -->
+        <!-- ========================================================= -->
+        <section id="vista-guia" class="view-section">
+            <div class="section-back-bar">
+                <button class="btn-back-home" onclick="volverAlInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a inicio
+                </button>
+                <span class="section-breadcrumb">Inicio / Cómo Funciona y Reseñas</span>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <h2><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona el emparejamiento en PetMatch?</h2>
+                    <div class="steps-container">
+                        <div class="step-row">
+                            <div class="step-num">1</div>
+                            <div class="step-txt">
+                                <h5>Inscríbete y Regístrate Gratis</h5>
+                                <p>Crea tu cuenta gratis y publica el perfil de tu perro o gato sin costo.</p>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-num">2</div>
+                            <div class="step-txt">
+                                <h5>Activa Nivel Pro ($5.00/año o 2 Referidos)</h5>
+                                <p>Desbloquea contactos directos por WhatsApp, barrios exactos y el calendario veterinario con alertas automáticas al correo.</p>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-num">3</div>
+                            <div class="step-txt">
+                                <h5>Contacta de Forma Segura por WhatsApp</h5>
+                                <p>Coordina el encuentro o paseo en parques públicos de forma responsable.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h2><i class="fa-solid fa-circle-question"></i> Preguntas Frecuentes sobre PetMatch</h2>
+                    <div class="faq-item">
+                        <h4>¿Qué incluye la membresía Nivel Pro ($5.00/año)?</h4>
+                        <p>Acceso ilimitado a números de WhatsApp y sectores exactos de dueños, más el Calendario Veterinario completo con mensajes recordatorios automáticos al correo electrónico y Google Calendar. También puedes obtenerlo gratis invitando a 2 amigos.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>¿Cómo compro accesorios en la tienda de mascotas?</h4>
+                        <p>Abre el menú y entra a "Tienda Oficial" para ver collares, juguetes y camas con entrega rápida en Ecuador.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="font-size: 1.2rem; color: var(--dark); margin-bottom: 0.4rem;">⭐ Experiencias Exitosas de Emparejamiento y Paseos</h2>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">Opiniones verificadas de encuentros y cruzas responsables realizadas en nuestra comunidad de mascotas.</p>
+            <div id="gridReseñas" class="profiles-grid"></div>
+
+            <div class="referral-banner">
+                <h3>🎁 ¡Invita a 2 amigos y gana tu membresía Pro gratis!</h3>
+                <p>Comparte tu enlace de referido. Si 2 amigos se registran, obtendrás tu insignia de estrella ⭐ y beneficios Pro por 1 año.</p>
+                <div class="referral-input-group">
+                    <input type="text" id="refLinkGuia" readonly value="https://petmatch-ecuador.github.io/petmatch/?ref=invitado">
+                    <button class="btn-copy" onclick="copiarEnlace('refLinkGuia')"><i class="fa-solid fa-copy"></i> Copiar</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <button class="btn-back-home" onclick="volverAlInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a inicio
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- VISTA 5: PROGRAMA DE REFERIDOS PRO                        -->
+        <!-- ========================================================= -->
+        <section id="vista-referidos" class="view-section">
+            <div class="section-back-bar">
+                <button class="btn-back-home" onclick="volverAlInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a inicio
+                </button>
+                <span class="section-breadcrumb">Inicio / Referidos Pro</span>
+            </div>
+
+            <div class="referral-banner" style="margin-top: 0; max-width: 720px;">
+                <h3>🎁 ¡Invita a 2 amigos y gana tu membresía Pro gratis!</h3>
+                <p>Comparte tu enlace personal de referido con otros dueños de mascotas. Cuando 2 amigos se registren usando tu enlace, obtendrás automáticamente tu insignia de estrella ⭐, acceso ilimitado a contactos por WhatsApp y recordatorios veterinarios automáticos al correo por 1 año.</p>
+                <div class="referral-input-group">
+                    <input type="text" id="refLink" readonly value="https://petmatch-ecuador.github.io/petmatch/?ref=invitado">
+                    <button class="btn-copy" onclick="copiarEnlace('refLink')"><i class="fa-solid fa-copy"></i> Copiar Enlace</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button class="btn-back-home" onclick="volverAlInicio()">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a inicio
+                </button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- MODALES -->
+<div id="modalAuth" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="authTitle">Iniciar Sesión</h2>
+            <button class="close-btn" onclick="cerrarModalAuth()">&times;</button>
+        </div>
+        <form id="formAuth" onsubmit="manejarAuth(event)">
+            <div class="form-group">
+                <label>Correo Electrónico <span class="required-star">*</span></label>
+                <input type="email" id="authEmail" required placeholder="tu_correo@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Contraseña <span class="required-star">*</span></label>
+                <input type="password" id="authPassword" required placeholder="••••••••">
+                <div id="forgotPasswordContainer" style="text-align: right; margin-top: 0.3rem;">
+                    <a href="javascript:void(0)" onclick="recuperarPassword()" style="font-size: 0.75rem; color: var(--info); text-decoration: none;">¿Olvidaste tu contraseña?</a>
+                </div>
+            </div>
+            <button type="submit" id="btnSubmitAuth" class="btn-submit">Ingresar</button>
+            <p style="text-align: center; margin-top: 0.8rem; font-size: 0.8rem;">
+                <a href="javascript:void(0)" onclick="alternarModoAuth()" id="authSwitchText" style="color: var(--primary); font-weight: bold; text-decoration: none;">¿No tienes cuenta? Regístrate</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+<div id="modalRegistro" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Publicar Mascota (Gratis)</h2>
+            <button class="close-btn" onclick="cerrarModalRegistro()">&times;</button>
+        </div>
+        <form id="formMascota" onsubmit="guardarMascotaNube(event)">
+            <div class="form-group">
+                <label>Nombre <span class="required-star">*</span></label>
+                <input type="text" id="nombre" required placeholder="Ej. Rocky...">
+            </div>
+            <div class="form-group">
+                <label>Objetivo <span class="required-star">*</span></label>
+                <select id="objetivo" required>
+                    <option value="Cruza Responsable">Cruza Responsable (Pareja)</option>
+                    <option value="Amigos, Paseos y Juegos">Amigos y Paseos</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Especie <span class="required-star">*</span></label>
+                <select id="especie" required>
+                    <option value="Perro">Perro</option>
+                    <option value="Gato">Gato</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sexo <span class="required-star">*</span></label>
+                <select id="sexo" required>
+                    <option value="Macho">Macho</option>
+                    <option value="Hembra">Hembra</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Raza <span class="required-star">*</span></label>
+                <input type="text" id="raza" required placeholder="Ej. Golden, Mestizo...">
+            </div>
+            
+            <div class="form-group">
+                <label>Foto de la Mascota <span class="required-star">*</span></label>
+                <label for="fotoArchivo" class="camera-upload-btn">
+                    <i class="fa-solid fa-images fa-lg"></i> Elegir de Galería o Tomar Foto
+                </label>
+                <input type="file" id="fotoArchivo" accept="image/*" required onchange="mostrarNombreArchivo(this)">
+                <span id="fileChosenName">Ninguna foto seleccionada</span>
+                <div id="previewContainer" style="margin-top: 0.5rem; display: none; text-align: center;">
+                    <img id="imgPreview" src="" alt="Vista previa" style="max-height: 120px; border-radius: 8px; border: 1px solid #cbd5e0; object-fit: cover;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>País <span class="required-star">*</span></label>
+                <select id="pais" required>
+                    <option value="Ecuador" selected>Ecuador</option>
+                    <option value="Colombia">Colombia</option>
+                    <option value="Perú">Perú</option>
+                    <option value="México">México</option>
+                    <option value="España">España</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ciudad / Sector (Ej: Quito / La Carolina) <span class="required-star">*</span></label>
+                <input type="text" id="ciudad" required placeholder="Ej. Quito / La Carolina...">
+            </div>
+            <div class="form-group">
+                <label>Descripción <span class="required-star">*</span></label>
+                <textarea id="descripcion" required placeholder="Buscando pareja o amigos para pasear..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>WhatsApp <span class="required-star">*</span></label>
+                <input type="tel" id="whatsapp" required pattern="[0-9]{10,13}" placeholder="Ej. 593999140028">
+            </div>
+            <button type="submit" class="btn-submit">Publicar en la Nube</button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL SUSCRIPCIÓN / NIVEL PRO ($5.00 USD / AÑO) -->
+<div id="modalPago" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-crown" style="color:#d97706;"></i> Membresía Nivel Pro ($5.00/año)</h2>
+            <button class="close-btn" onclick="cerrarModalPago()">&times;</button>
+        </div>
+        <div class="pay-box">
+            <p id="proModalCustomMsg">Este beneficio es exclusivo para miembros <strong>Nivel Pro</strong>. Activa tu suscripción anual por solo <strong>$5.00 USD / año</strong> (o consíguela gratis invitando a 2 amigos):</p>
+            
+            <div class="pro-benefits-list">
+                <div>✅ <strong>Calendario Veterinario Ilimitado:</strong> Registra todas tus mascotas, vacunas y desparasitaciones.</div>
+                <div>📧 <strong>Mensajes Recordatorios Automáticos:</strong> Avisos programados 3 días antes de cada vacuna a tu correo + Google Calendar.</div>
+                <div>📱 <strong>WhatsApp y Barrios Exactos:</strong> Contacta directamente a dueños verificados sin límites.</div>
+            </div>
+
+            <div class="payment-methods">
+                <div class="payment-option" onclick="window.open('https://pay.hotmart.com/EJEMPLO_PAGO_PETMATCH?off=anual5', '_blank')">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <div>
+                        <h4>Tarjeta de Crédito / Débito ($5.00 USD)</h4>
+                        <span>Activación inmediata por 1 año</span>
+                    </div>
+                </div>
+                <div class="payment-option" onclick="alert('Banco Pichincha\nAhorros: 2200112233\nValor: $5.00 USD\nEnvía tu comprobante al WhatsApp de soporte PetMatch')">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <div>
+                        <h4>Transferencia Bancaria</h4>
+                        <span>Banco Pichincha ($5.00 USD / año)</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="simularPagoExitoso()" class="btn-primary" style="width:100%; border-radius:8px; padding:0.72rem; justify-content:center; margin-bottom:0.4rem;">
+                <i class="fa-solid fa-check-circle"></i> Ya realicé mi pago / Activar Nivel Pro (1 año)
+            </button>
+            <button onclick="verInteresadosGratis()" class="btn-free-check">Revisar mis referidos y notificaciones</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalContactoExclusivo" class="modal">
+    <div class="modal-content" style="text-align: center;">
+        <div class="modal-header">
+            <h2>Datos de Contacto</h2>
+            <button class="close-btn" onclick="cerrarModalContacto()">&times;</button>
+        </div>
+        <div style="padding: 0.5rem 0;">
+            <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0.8rem;">¡Suscripción Nivel Pro activa! Aquí tienes la ubicación exacta y el número directo:</p>
+            <div style="background: #f7fafc; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; text-align: left; border: 1px solid #e2e8f0;">
+                <p style="font-size: 0.9rem; margin-bottom: 0.4rem;"><strong>📍 Sector / Barrio:</strong> <span id="contactoBarrio" style="color:var(--primary); font-weight:bold;"></span></p>
+                <p style="font-size: 0.9rem;"><strong>📱 WhatsApp:</strong> <span id="contactoNumero" style="color:#25D366; font-weight:bold;"></span></p>
+            </div>
+            <a id="btnIrWhatsApp" href="#" target="_blank" class="btn-whatsapp" style="justify-content: center; padding: 0.7rem; font-size: 0.95rem; margin-bottom: 0.8rem; width: 100%;">
+                <i class="fa-brands fa-whatsapp fa-lg"></i> Abrir Chat de WhatsApp
+            </a>
+            <div class="contact-caution-tip">
+                💡 <strong>Sugerencia de seguridad:</strong> Al coordinar el cruce o paseo, recuerda tomar precauciones (reunirse en lugares seguros y públicos). PetMatch es un medio de contacto tecnológico y los acuerdos corren bajo la absoluta responsabilidad de los participantes.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalInteresados" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Notificaciones y Referidos</h2>
+            <button class="close-btn" onclick="cerrarModalInteresados()">&times;</button>
+        </div>
+        <div style="padding: 0.3rem 0;">
+            <p style="font-size: 0.85rem; color: #555; margin-bottom: 0.8rem;">Estado de tu cuenta y amigos invitados:</p>
+            <div style="background: #f7fafc; padding: 0.8rem; border-radius: 8px;">
+                <p style="font-size: 0.85rem; color: #334155;" id="notifReferidosText">• Tienes 0 amigos referidos registrados.</p>
+                <p style="font-size: 0.82rem; color: #64748b; margin-top: 0.4rem;" id="notifVigenciaText">• Estado de suscripción: Plan Free.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="https://wa.me/593999140028?text=Hola,%20vengo%20de%20PetMatch%20Comunidad%20(Emparejamiento)%20y%20necesito%20soporte" target="_blank" class="float-whatsapp" title="Soporte WhatsApp PetMatch Comunidad">
+    <i class="fa-brands fa-whatsapp"></i>
+</a>
+
+<script>
+    const SUPABASE_URL = 'https://bdgrrfykfnhyucazwyvc.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_BNN2kTP8Rw1T8BLCmzX9QQ_SD7h4ovn';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let esRegistroAuth = false;
+    let especieSeleccionada = '';
+
+    /* --- FUNCIÓN PARA VOLVER A INICIO DESDE CUALQUIER OPCIÓN --- */
+    function volverAlInicio() {
+        cambiarVista('vista-explorar', document.getElementById('nav-explorar'));
+    }
+
+    /* --- GESTIÓN DE NIVEL PRO Y VIGENCIA ANUAL (365 DÍAS) --- */
+    function esUsuarioProActivo() {
+        const suscripto = localStorage.getItem('petmatch_suscripto') === 'true';
+        if (!suscripto) return false;
+
+        const fechaExp = localStorage.getItem('petmatch_pro_expira');
+        if (fechaExp) {
+            const hoy = new Date();
+            const expira = new Date(fechaExp);
+            if (hoy > expira) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function obtenerDiasRestantesPro() {
+        const fechaExp = localStorage.getItem('petmatch_pro_expira');
+        if (!fechaExp) return null;
+        const hoy = new Date();
+        const expira = new Date(fechaExp);
+        const diffMs = expira - hoy;
+        return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    }
+
+    function verificarEstadoSuscripcionYAlertas() {
+        const banner = document.getElementById('expiryBanner');
+        const bannerMsg = document.getElementById('expiryBannerMsg');
+        const vetBanner = document.getElementById('vetPlanBanner');
+        const vetText = document.getElementById('vetPlanText');
+        const btnUpgradeVet = document.getElementById('btnUpgradeVet');
+        const sidebarExp = document.getElementById('proExpirySidebar');
+        const notifVigencia = document.getElementById('notifVigenciaText');
+
+        const suscripto = localStorage.getItem('petmatch_suscripto') === 'true';
+        const diasRestantes = obtenerDiasRestantesPro();
+
+        if (suscripto && diasRestantes !== null) {
+            const fechaFormateada = new Date(localStorage.getItem('petmatch_pro_expira')).toLocaleDateString('es-EC');
+
+            if (diasRestantes <= 0) {
+                banner.style.display = 'flex';
+                banner.classList.add('urgent');
+                bannerMsg.innerHTML = '⚠️ <strong>¡Tu membresía PetMatch Pro ha caducado!</strong> Renueva hoy por $5.00/año para recuperar tus recordatorios automáticos al correo y contactos directos.';
+                if (sidebarExp) sidebarExp.innerHTML = '<span style="color:var(--primary); font-weight:700;">⚠️ Membresía Pro caducada</span>';
+                if (notifVigencia) notifVigencia.textContent = '• Estado: Membresía Pro caducada. Renueva para recuperar beneficios.';
+            } else if (diasRestantes <= 30) {
+                banner.style.display = 'flex';
+                banner.classList.remove('urgent');
+                bannerMsg.innerHTML = `⏳ <strong>¡Atención! Tu suscripción Nivel Pro vence en ${diasRestantes} día(s) (${fechaFormateada}).</strong> Renueva ahora para no perder los beneficios de la página.`;
+                if (sidebarExp) sidebarExp.innerHTML = `<span style="color:#b45309; font-weight:700;">⏳ Pro vence en ${diasRestantes} días</span>`;
+                if (notifVigencia) notifVigencia.textContent = `• Estado: Nivel Pro activo (vence en ${diasRestantes} días).`;
+            } else {
+                banner.style.display = 'none';
+                if (sidebarExp) sidebarExp.textContent = `⭐ Nivel Pro vigente hasta: ${fechaFormateada}`;
+                if (notifVigencia) notifVigencia.textContent = `• Estado: Nivel Pro activo hasta ${fechaFormateada} (${diasRestantes} días restantes).`;
+            }
+        } else {
+            banner.style.display = 'none';
+            if (sidebarExp) sidebarExp.textContent = 'Plan Free (1 control vet de prueba)';
+            if (notifVigencia) notifVigencia.textContent = '• Estado: Plan Free (actualiza a Pro por $5.00/año).';
+        }
+
+        if (esUsuarioProActivo()) {
+            if (vetBanner) {
+                vetBanner.className = 'vet-plan-status pro-mode';
+                vetText.innerHTML = '⭐ <strong>Nivel Pro Activo:</strong> Controles veterinarios ilimitados con <strong>envío automático de mensajes recordatorios</strong> (3 días antes) a tu correo y Google Calendar.';
+                btnUpgradeVet.style.display = 'none';
+            }
+        } else {
+            if (vetBanner) {
+                vetBanner.className = 'vet-plan-status free-mode';
+                vetText.innerHTML = '🔓 <strong>Plan Free:</strong> Puedes guardar <strong>1 control veterinario básico</strong> de prueba. Para guardar múltiples vacunas y activar mensajes recordatorios automáticos al correo, activa el <strong>Nivel Pro ($5.00/año)</strong>.';
+                btnUpgradeVet.style.display = 'inline-flex';
+            }
+        }
+    }
+
+    function abrirModalPro(mensajePersonalizado) {
+        toggleMobileSidebar(false);
+        const msgEl = document.getElementById('proModalCustomMsg');
+        if (msgEl) {
+            msgEl.innerHTML = mensajePersonalizado || 'Para ver el barrio exacto, chatear por WhatsApp y llevar tu calendario veterinario con recordatorios automáticos al correo, activa tu membresía <strong>Nivel Pro por solo $5.00 USD / año</strong> (o invita a 2 amigos):';
+        }
+        document.getElementById('modalPago').style.display = 'flex';
+    }
+
+    function toggleMobileSidebar(abrir) {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (abrir) {
+            sidebar.classList.add('open');
+            overlay.classList.add('open');
+        } else {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        }
+    }
+
+    function cambiarVista(idVista, botonMenu) {
+        document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById(idVista).classList.add('active');
+
+        document.querySelectorAll('.menu-item').forEach(btn => btn.classList.remove('active'));
+        if (botonMenu) botonMenu.classList.add('active');
+        toggleMobileSidebar(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filtrarPorCategoriaRapida(especie, botonPill) {
+        especieSeleccionada = especie;
+        document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+        botonPill.classList.add('active');
+        cargarMascotasNube();
+    }
+
+    function sincronizarBusquedaRapida(valor) {
+        document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById('vista-explorar').classList.add('active');
+        document.getElementById('filtroBusqueda').value = valor;
+        cargarMascotasNube();
+    }
+
+    function compartirPlataforma() {
+        const url = 'https://petmatch-ecuador.github.io/petmatch/';
+        if (navigator.share) {
+            navigator.share({
+                title: 'PetMatch | Encuentra Pareja y Amigos para tu Mascota',
+                text: 'Registra gratis a tu perro o gato para encontrar pareja, amigos de paseo o llevar su control veterinario.',
+                url: url
+            });
+        } else {
+            navigator.clipboard.writeText(url);
+            alert('¡Enlace de PetMatch copiado! Compártelo en tus grupos de WhatsApp o Facebook.');
+        }
+    }
+
+    /* --- LÓGICA DE CONTROL VETERINARIO AUTOMÁTICO (FREE: 1 / PRO: ILIMITADO + RECORDATORIOS) --- */
+    function validarCheckCorreoPro(checkbox) {
+        if (checkbox.checked && !esUsuarioProActivo()) {
+            checkbox.checked = false;
+            abrirModalPro('⭐ <strong>Beneficio Nivel Pro:</strong> El envío automático de mensajes recordatorios de vacunas y desparasitación a tu <strong>correo electrónico</strong> está disponible para miembros inscritos en Nivel Pro ($5.00 USD/año).');
+        }
+    }
+
+    function calcularFechaAvisoPrevio(fechaProximaStr) {
+        const fecha = new Date(fechaProximaStr + 'T00:00:00');
+        fecha.setDate(fecha.getDate() - 3);
+        return fecha.toISOString().split('T')[0];
+    }
+
+    async function agregarRecordatorioVet(event) {
+        event.preventDefault();
+        const controles = JSON.parse(localStorage.getItem('petmatch_vet_controls') || '[]');
+        const esPro = esUsuarioProActivo();
+
+        if (!esPro && controles.length >= 1) {
+            abrirModalPro('⭐ <strong>Beneficio Nivel Pro:</strong> Ya utilizaste tu <strong>1 registro gratuito de prueba</strong> en el Calendario Veterinario. Inscríbete al <strong>Nivel Pro ($5.00 USD/año)</strong> para guardar vacunas ilimitadas de todas tus mascotas y programar mensajes recordatorios automáticos.');
+            return;
+        }
+
+        const mascota = document.getElementById('vetMascota').value.trim();
+        const tipo = document.getElementById('vetTipo').value;
+        const fechaAplicada = document.getElementById('vetFechaAplicada').value;
+        const proximaFecha = document.getElementById('vetProximaFecha').value;
+        const notas = document.getElementById('vetNotas').value.trim();
+        const quiereCorreo = document.getElementById('vetAlertaCorreo').checked;
+        const correoDestino = document.getElementById('vetCorreoDestino').value.trim() || (currentUser ? currentUser.email : '');
+
+        if (quiereCorreo && !esPro) {
+            abrirModalPro('⭐ <strong>Beneficio Nivel Pro:</strong> Los mensajes recordatorios automáticos al correo electrónico requieren membresía Nivel Pro ($5.00 USD/año).');
+            return;
+        }
+
+        const fechaAvisoAutomatico = calcularFechaAvisoPrevio(proximaFecha);
+
+        const nuevoControl = {
+            id: Date.now(),
+            mascota,
+            tipo,
+            fechaAplicada,
+            proximaFecha,
+            fechaAvisoAutomatico,
+            notas,
+            alertaCorreo: esPro && quiereCorreo,
+            correoDestino: esPro && quiereCorreo ? correoDestino : ''
+        };
+
+        controles.push(nuevoControl);
+        controles.sort((a, b) => new Date(a.proximaFecha) - new Date(b.proximaFecha));
+        localStorage.setItem('petmatch_vet_controls', JSON.stringify(controles));
+
+        if (esPro && quiereCorreo && correoDestino) {
+            try {
+                await supabaseClient.from('recordatorios_vet').insert([{
+                    user_id: currentUser ? currentUser.id : null,
+                    mascota: mascota,
+                    tipo_control: tipo,
+                    proxima_fecha: proximaFecha,
+                    fecha_envio_aviso: fechaAvisoAutomatico,
+                    correo_destino: correoDestino,
+                    notas: notas
+                }]);
+            } catch (err) {
+                console.log('Respaldo local activo');
+            }
+        }
+
+        event.target.reset();
+        if (currentUser && document.getElementById('vetCorreoDestino')) {
+            document.getElementById('vetCorreoDestino').value = currentUser.email;
+        }
+        renderizarControlesVet();
+
+        if (esPro) {
+            alert(`✅ ¡Control veterinario programado!\n\n• Mascota: ${mascota} (${tipo})\n• Fecha cita: ${proximaFecha}\n• Aviso recordatorio automático: ${fechaAvisoAutomatico}` + (quiereCorreo && correoDestino ? ` al correo ${correoDestino}` : ''));
+        } else {
+            alert('✅ ¡Control veterinario de prueba guardado! Recuerda que en el Plan Free tienes 1 registro; actualiza a Nivel Pro ($5.00/año) para controles ilimitados y mensajes recordatorios automáticos.');
+        }
+    }
+
+    function enviarMensajeRecordatorioManual(id) {
+        if (!esUsuarioProActivo()) {
+            abrirModalPro('⭐ <strong>Beneficio Nivel Pro:</strong> El envío de mensajes recordatorios por correo y WhatsApp es exclusivo para miembros Nivel Pro ($5.00 USD/año).');
+            return;
+        }
+        const controles = JSON.parse(localStorage.getItem('petmatch_vet_controls') || '[]');
+        const c = controles.find(item => item.id === id);
+        if (!c) return;
+
+        const asunto = encodeURIComponent(`🐾 Recordatorio Veterinario PetMatch: ${c.mascota} - ${c.tipo}`);
+        const cuerpo = encodeURIComponent(
+            `Hola,\n\nEste es un mensaje recordatorio programado desde PetMatch Control Veterinario:\n\n` +
+            `• Mascota: ${c.mascota}\n` +
+            `• Control / Vacuna: ${c.tipo}\n` +
+            `• Fecha programada: ${c.proximaFecha}\n` +
+            `• Observaciones: ${c.notas || 'Ninguna'}\n\n` +
+            `¡Mantén a tu mascota sana y protegida con PetMatch!`
+        );
+
+        const destino = c.correoDestino || (currentUser ? currentUser.email : '');
+        window.location.href = `mailto:${destino}?subject=${asunto}&body=${cuerpo}`;
+    }
+
+    function eliminarControlVet(id) {
+        let controles = JSON.parse(localStorage.getItem('petmatch_vet_controls') || '[]');
+        controles = controles.filter(c => c.id !== id);
+        localStorage.setItem('petmatch_vet_controls', JSON.stringify(controles));
+        renderizarControlesVet();
+    }
+
+    function generarEnlaceGoogleCalendar(c) {
+        const fechaLimpia = c.proximaFecha.replace(/-/g, '');
+        const titulo = encodeURIComponent(`🐾 Control Veterinario (${c.mascota}): ${c.tipo}`);
+        const detalles = encodeURIComponent(`Recordatorio automático registrado en PetMatch Pro.\nMascota: ${c.mascota}\nTratamiento: ${c.tipo}\nNotas: ${c.notas || 'Sin notas adicionales'}`);
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${titulo}&dates=${fechaLimpia}/${fechaLimpia}&details=${detalles}`;
+    }
+
+    function verificarAlertasVetAlCargar() {
+        if (!esUsuarioProActivo()) return;
+        const controles = JSON.parse(localStorage.getItem('petmatch_vet_controls') || '[]');
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        controles.forEach(c => {
+            const fechaObj = new Date(c.proximaFecha + 'T00:00:00');
+            const diffDias = Math.ceil((fechaObj - hoy) / (1000 * 60 * 60 * 24));
+            if (diffDias >= 0 && diffDias <= 3) {
+                console.log(`Recordatorio automático activo para ${c.mascota}: ${c.tipo} en ${diffDias} día(s).`);
+            }
+        });
+    }
+
+    function renderizarControlesVet() {
+        const contenedor = document.getElementById('listaControlesVet');
+        if (!contenedor) return;
+        const controles = JSON.parse(localStorage.getItem('petmatch_vet_controls') || '[]');
+        const esPro = esUsuarioProActivo();
+        
+        if (controles.length === 0) {
+            contenedor.innerHTML = '<div style="padding: 1.2rem; text-align: center; background: #f8fafc; border-radius: 10px; color: #64748b; font-size: 0.85rem; border: 1px dashed #cbd5e1;">Aún no tienes controles programados. Registra la próxima vacuna o desparasitación de tu mascota a la izquierda para activar su recordatorio automático.</div>';
+            return;
+        }
+
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        contenedor.innerHTML = '';
+        controles.forEach(c => {
+            const fechaObj = new Date(c.proximaFecha + 'T00:00:00');
+            const diffDias = Math.ceil((fechaObj - hoy) / (1000 * 60 * 60 * 24));
+            const esUrgente = diffDias <= 7;
+            let textoEstado = `Faltan ${diffDias} días`;
+            if (diffDias < 0) textoEstado = `Vencido hace ${Math.abs(diffDias)} días`;
+            else if (diffDias === 0) textoEstado = '¡Es hoy!';
+
+            const fechaAviso = c.fechaAvisoAutomatico || calcularFechaAvisoPrevio(c.proximaFecha);
+
+            const div = document.createElement('div');
+            div.className = `vet-item ${esUrgente ? 'urgente' : ''}`;
+            div.innerHTML = `
+                <div class="vet-item-top">
+                    <span class="vet-item-title">🐾 ${c.mascota} — ${c.tipo}</span>
+                    <span class="vet-badge">${textoEstado} (${c.proximaFecha})</span>
+                </div>
+                <div class="vet-item-meta">
+                    Aplicado el: <strong>${c.fechaAplicada}</strong> ${c.notas ? `• Notas: ${c.notas}` : ''}
+                    ${esPro ? 
+                        `<br><span class="auto-alert-pill"><i class="fa-solid fa-bell"></i> Mensaje recordatorio programado: ${fechaAviso} ${c.correoDestino ? `(${c.correoDestino})` : ''}</span>` : 
+                        `<br><span style="color:#b45309; font-size:0.75rem; font-weight:600;">🔒 Recordatorio automático al correo disponible en Nivel Pro</span>`
+                    }
+                </div>
+                <div class="vet-item-actions">
+                    ${esPro ? 
+                        `<button onclick="enviarMensajeRecordatorioManual(${c.id})" class="btn-send-msg">
+                            <i class="fa-solid fa-envelope"></i> Enviar Recordatorio Ahora
+                        </button>
+                        <a href="${generarEnlaceGoogleCalendar(c)}" target="_blank" class="btn-gcal">
+                            <i class="fa-regular fa-calendar-plus"></i> Google Calendar
+                        </a>` :
+                        `<button onclick="abrirModalPro('⭐ <strong>Beneficio Nivel Pro:</strong> El envío automático de mensajes recordatorios al correo y Google Calendar están disponibles para miembros Nivel Pro ($5.00 USD/año).')" class="btn-send-msg locked">
+                            <i class="fa-solid fa-lock"></i> Activar Recordatorios Automáticos (Pro ⭐)
+                        </button>`
+                    }
+                    <button onclick="eliminarControlVet(${c.id})" class="btn-vet-del">
+                        <i class="fa-solid fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            `;
+            contenedor.appendChild(div);
+        });
+    }
+
+    function mostrarNombreArchivo(input) {
+        const span = document.getElementById('fileChosenName');
+        const previewContainer = document.getElementById('previewContainer');
+        const imgPreview = document.getElementById('imgPreview');
+        
+        if (input.files && input.files[0]) {
+            span.textContent = "📸 Archivo listo: " + input.files[0].name;
+            span.style.color = "#28a745";
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imgPreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            span.textContent = "Ninguna foto seleccionada";
+            span.style.color = "#64748b";
+            previewContainer.style.display = 'none';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+        if (refCode) {
+            localStorage.setItem('petmatch_invitador', refCode);
+        }
+    });
+
+    async function verificarSesion() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        currentUser = session ? session.user : null;
+        actualizarUIAuth();
+        if (currentUser) {
+            actualizarEnlaceReferido();
+            verificarEstrellasReferidos(currentUser.id);
+            const emailVetInput = document.getElementById('vetCorreoDestino');
+            if (emailVetInput && !emailVetInput.value) emailVetInput.value = currentUser.email;
+        }
+        verificarEstadoSuscripcionYAlertas();
+    }
+
+    function actualizarEnlaceReferido() {
+        if (currentUser) {
+            const baseURL = window.location.origin + window.location.pathname;
+            const enlace = `${baseURL}?ref=${currentUser.id}`;
+            if (document.getElementById('refLink')) document.getElementById('refLink').value = enlace;
+            if (document.getElementById('refLinkGuia')) document.getElementById('refLinkGuia').value = enlace;
+        }
+    }
+
+    async function verificarEstrellasReferidos(userId) {
+        const { data } = await supabaseClient.from('profiles').select('*').eq('referred_by', userId);
+        const count = data ? data.length : 0;
+        const statusEl = document.getElementById('userStatus');
+        const notifText = document.getElementById('notifReferidosText');
+        if (notifText) notifText.textContent = `• Tienes ${count} amigo(s) referido(s) registrado(s).`;
+        
+        if (count >= 2 && localStorage.getItem('petmatch_suscripto') !== 'true') {
+            activarSuscripcionAnual();
+        }
+
+        if (esUsuarioProActivo()) {
+            statusEl.innerHTML = `${currentUser.email} <span style="color:#d69e2e;" title="¡Nivel Pro!">⭐ Nivel Pro</span>`;
+        } else {
+            statusEl.textContent = `${currentUser.email} (Plan Free)`;
+        }
+        verificarEstadoSuscripcionYAlertas();
+    }
+
+    function actualizarUIAuth() {
+        const statusEl = document.getElementById('userStatus');
+        const btnTop = document.getElementById('btnAuthTop');
+        const btnSide = document.getElementById('btnAuthSidebar');
+        const esPro = esUsuarioProActivo();
+
+        if (currentUser) {
+            statusEl.innerHTML = esPro 
+                ? `${currentUser.email} <span style="color:#d69e2e;">⭐ Nivel Pro</span>` 
+                : `${currentUser.email} (Plan Free)`;
+            btnTop.textContent = 'Salir';
+            btnTop.onclick = cerrarSesion;
+            btnSide.textContent = 'Cerrar Sesión';
+            btnSide.onclick = cerrarSesion;
+        } else {
+            statusEl.innerHTML = esPro 
+                ? `Miembro <span style="color:#d69e2e;">⭐ Nivel Pro</span>` 
+                : 'Visitante (Plan Free)';
+            btnTop.textContent = 'Ingresar';
+            btnTop.onclick = abrirModalAuth;
+            btnSide.textContent = 'Iniciar Sesión';
+            btnSide.onclick = abrirModalAuth;
+        }
+    }
+
+    function comprobarPaisExpansion() {
+        const paisSelect = document.getElementById('filtroPais').value;
+        const alertBox = document.getElementById('expansionAlert');
+        const targetPaisSpan = document.getElementById('targetPais');
+        if (paisSelect && paisSelect !== 'Ecuador') {
+            targetPaisSpan.textContent = paisSelect;
+            alertBox.style.display = 'block';
+        } else {
+            alertBox.style.display = 'none';
+        }
+    }
+
+    function abrirModalAuth() { toggleMobileSidebar(false); document.getElementById('modalAuth').style.display = 'flex'; }
+    function cerrarModalAuth() { document.getElementById('modalAuth').style.display = 'none'; }
+
+    function alternarModoAuth() {
+        esRegistroAuth = !esRegistroAuth;
+        document.getElementById('authTitle').textContent = esRegistroAuth ? 'Crear Cuenta' : 'Iniciar Sesión';
+        document.getElementById('btnSubmitAuth').textContent = esRegistroAuth ? 'Registrarse' : 'Ingresar';
+        document.getElementById('authSwitchText').textContent = esRegistroAuth ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate';
+        document.getElementById('forgotPasswordContainer').style.display = esRegistroAuth ? 'none' : 'block';
+    }
+
+    async function recuperarPassword() {
+        const email = document.getElementById('authEmail').value;
+        if (!email) {
+            alert('Por favor, ingresa tu correo electrónico primero en el campo superior.');
+            document.getElementById('authEmail').focus();
+            return;
+        }
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + window.location.pathname
+        });
+        if (error) {
+            alert('Error al enviar correo de recuperación: ' + error.message);
+        } else {
+            alert('¡Correo de recuperación enviado! Revisa tu bandeja de entrada para restablecer tu contraseña.');
+        }
+    }
+
+    async function manejarAuth(event) {
+        event.preventDefault();
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+
+        if (esRegistroAuth) {
+            const invitadorId = localStorage.getItem('petmatch_invitador') || null;
+            const { data, error } = await supabaseClient.auth.signUp({ 
+                email, password, options: { data: { referred_by: invitadorId } }
+            });
+            if (error) alert('Error: ' + error.message);
+            else {
+                if (data.user && invitadorId) {
+                    await supabaseClient.from('profiles').insert([{ id: data.user.id, referred_by: invitadorId }]);
+                }
+                alert('¡Cuenta creada con éxito!'); cerrarModalAuth(); 
+            }
+        } else {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) alert('Error: ' + error.message);
+            else { alert('¡Bienvenido!'); currentUser = data.user; actualizarUIAuth(); cerrarModalAuth(); actualizarEnlaceReferido(); }
+        }
+    }
+
+    async function cerrarSesion() {
+        await supabaseClient.auth.signOut();
+        currentUser = null;
+        localStorage.removeItem('petmatch_suscripto');
+        localStorage.removeItem('petmatch_pro_expira');
+        actualizarUIAuth();
+        verificarEstadoSuscripcionYAlertas();
+        renderizarControlesVet();
+        alert('Sesión cerrada.');
+    }
+
+    async function darLike(id, likesActuales) {
+        let likedPets = JSON.parse(localStorage.getItem('petmatch_liked_pets') || '[]');
+        const index = likedPets.indexOf(id);
+        let nuevoTotal;
+
+        if (index > -1) {
+            nuevoTotal = Math.max(0, (likesActuales || 1) - 1);
+            likedPets.splice(index, 1);
+        } else {
+            nuevoTotal = (likesActuales || 0) + 1;
+            likedPets.push(id);
+        }
+
+        localStorage.setItem('petmatch_liked_pets', JSON.stringify(likedPets));
+
+        const { error } = await supabaseClient.from('mascotas').update({ likes_count: nuevoTotal }).eq('id', id);
+        if (!error) {
+            cargarMascotasNube();
+        }
+    }
+
+    async function cargarMascotasNube() {
+        const paisFiltro = document.getElementById('filtroPais').value;
+        const objetivoFiltro = document.getElementById('filtroObjetivo').value;
+        const sexoFiltro = document.getElementById('filtroSexo').value;
+        const textoFiltro = document.getElementById('filtroBusqueda').value.toLowerCase();
+
+        let query = supabaseClient.from('mascotas').select('*').order('id', { ascending: false });
+
+        if (paisFiltro) query = query.eq('pais', paisFiltro);
+        if (objetivoFiltro) query = query.eq('objetivo', objetivoFiltro);
+        if (especieSeleccionada) query = query.eq('especie', especieSeleccionada);
+        if (sexoFiltro) query = query.eq('sexo', sexoFiltro);
+
+        let { data: mascotas, error } = await query;
+        if (error) { console.error('Error:', error); return; }
+
+        if (mascotas && textoFiltro) {
+            mascotas = mascotas.filter(m => 
+                (m.nombre && m.nombre.toLowerCase().includes(textoFiltro)) || 
+                (m.raza && m.raza.toLowerCase().includes(textoFiltro)) || 
+                (m.ciudad && m.ciudad.toLowerCase().includes(textoFiltro))
+            );
+        }
+
+        mostrarPerfilCards(mascotas);
+        cargarReseñas();
+    }
+
+    function mostrarPerfilCards(lista) {
+        const grid = document.getElementById('gridMascotas');
+        grid.innerHTML = '';
+        if(!lista || lista.length === 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 2rem;">No se encontraron perfiles con esos filtros.</p>';
+            return;
+        }
+
+        let likedPets = JSON.parse(localStorage.getItem('petmatch_liked_pets') || '[]');
+
+        lista.forEach(m => {
+            const esConcretado = m.estado === 'concretado';
+            const esAmigos = m.objetivo === 'Amigos, Paseos y Juegos';
+            const yaLeDioLike = likedPets.includes(m.id);
+            const ciudadPublica = m.ciudad ? m.ciudad.split(/[\/\(\-,]/)[0].trim() : 'Ecuador';
+
+            const card = document.createElement('div');
+            card.className = 'profile-card';
+            card.innerHTML = `
+                <div class="profile-img">
+                    ${esConcretado ? '<span class="badge-concretado">¡Realizado! 🎉</span>' : (esAmigos ? '<span class="badge-amigos">🎾 Amigos</span>' : `<span class="badge-type">${m.especie} (${m.sexo || 'N/D'})</span>`)}
+                    <button class="like-badge ${yaLeDioLike ? 'liked' : ''}" onclick="darLike(${m.id}, ${m.likes_count || 0})">
+                        <i class="${yaLeDioLike ? 'fa-solid' : 'fa-regular'} fa-heart"></i> ${m.likes_count || 0}
+                    </button>
+                    <img src="${m.img}" alt="${m.nombre} - ${m.especie} ${m.raza} en ${ciudadPublica}" onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=500'">
+                </div>
+                <div class="profile-info">
+                    <h3>${m.nombre} <span>${m.raza}</span></h3>
+                    <p>${m.descripcion}</p>
+                    <div class="profile-footer">
+                        <span class="location"><i class="fa-solid fa-location-dot"></i> ${ciudadPublica} (${m.pais || 'Ecuador'})</span>
+                        ${esConcretado ? 
+                            `<div style="display:flex; gap:0.3rem; align-items:center;">
+                                <button class="btn-concretado-disabled" disabled>Listo</button>
+                                <button onclick="abrirModalReseña(${m.id})" class="btn-review-trigger">Reseña</button>
+                             </div>` : 
+                            `<button onclick="intentarContactar('${encodeURIComponent(m.ciudad)}', '${m.whatsapp}', '${m.nombre}')" class="btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Contactar</button>`
+                        }
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function intentarContactar(ciudadCompleta, whatsappNum, nombreMascota) {
+        if (esUsuarioProActivo()) {
+            document.getElementById('contactoBarrio').textContent = decodeURIComponent(ciudadCompleta);
+            document.getElementById('contactoNumero').textContent = whatsappNum;
+            document.getElementById('btnIrWhatsApp').href = `https://wa.me/${whatsappNum}?text=Hola,%20vi%20el%20perfil%20de%20${nombreMascota}%20en%20PetMatch%20y%20me%20gustaría%20coordinar.`;
+            document.getElementById('modalContactoExclusivo').style.display = 'flex';
+        } else {
+            abrirModalPro('Para ver el barrio exacto, el número de WhatsApp del dueño y chatear directamente, activa tu membresía <strong>Nivel Pro por solo $5.00 USD / año</strong> (o invita a 2 amigos con tu enlace de referido):');
+        }
+    }
+
+    function activarSuscripcionAnual() {
+        const hoy = new Date();
+        const fechaVencimiento = new Date(hoy);
+        fechaVencimiento.setFullYear(hoy.getFullYear() + 1);
+        localStorage.setItem('petmatch_suscripto', 'true');
+        localStorage.setItem('petmatch_pro_expira', fechaVencimiento.toISOString());
+    }
+
+    function simularPagoExitoso() {
+        activarSuscripcionAnual();
+        cerrarModalPago();
+        actualizarUIAuth();
+        verificarEstadoSuscripcionYAlertas();
+        renderizarControlesVet();
+        const fechaFin = new Date(localStorage.getItem('petmatch_pro_expira')).toLocaleDateString('es-EC');
+        alert(`⭐ ¡Membresía Nivel Pro activada por 1 año (vigente hasta el ${fechaFin})! Ya tienes acceso completo a contactos por WhatsApp y al Calendario Veterinario con mensajes recordatorios automáticos.`);
+    }
+
+    async function cargarReseñas() {
+        const { data: reseñas } = await supabaseClient.from('reseñas').select('*').order('id', { ascending: false });
+        const grid = document.getElementById('gridReseñas');
+        if(!grid) return;
+        grid.innerHTML = '';
+        if (!reseñas || reseñas.length === 0) {
+            grid.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">Aún no hay reseñas registradas.</p>';
+            return;
+        }
+        reseñas.forEach(r => {
+            const card = document.createElement('div');
+            card.className = 'profile-card';
+            card.style.padding = '1rem';
+            let estrellasHtml = '⭐'.repeat(r.estrellas || 5);
+            card.innerHTML = `
+                <h4 style="color:var(--dark); font-size:0.95rem; margin-bottom:0.2rem;">${r.autor}</h4>
+                <div style="color:#f6ad55; font-size:0.8rem; margin-bottom:0.4rem;">${estrellasHtml}</div>
+                <p style="font-size:0.85rem; color:#475569;">"${r.comentario}"</p>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function abrirModalRegistro() { toggleMobileSidebar(false); document.getElementById('modalRegistro').style.display = 'flex'; }
+    function cerrarModalRegistro() { document.getElementById('modalRegistro').style.display = 'none'; }
+    function cerrarModalContacto() { document.getElementById('modalContactoExclusivo').style.display = 'none'; }
+    
+    function cerrarModalPago() { document.getElementById('modalPago').style.display = 'none'; }
+    function verInteresadosGratis() { cerrarModalPago(); verificarEstadoSuscripcionYAlertas(); document.getElementById('modalInteresados').style.display = 'flex'; }
+    function cerrarModalInteresados() { document.getElementById('modalInteresados').style.display = 'none'; }
+
+    async function guardarMascotaNube(event) {
+        event.preventDefault();
+        const archivoInput = document.getElementById('fotoArchivo');
+        if (archivoInput.files && archivoInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const nuevaMascota = {
+                    user_id: currentUser ? currentUser.id : null,
+                    nombre: document.getElementById('nombre').value,
+                    objetivo: document.getElementById('objetivo').value,
+                    especie: document.getElementById('especie').value,
+                    sexo: document.getElementById('sexo').value,
+                    raza: document.getElementById('raza').value,
+                    img: e.target.result,
+                    pais: document.getElementById('pais').value,
+                    ciudad: document.getElementById('ciudad').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    whatsapp: document.getElementById('whatsapp').value,
+                    estado: "activo",
+                    likes_count: 0
+                };
+                const { error } = await supabaseClient.from('mascotas').insert([nuevaMascota]);
+                if (error) alert('Error: ' + error.message);
+                else { 
+                    alert('¡Mascota publicada con éxito!'); 
+                    cerrarModalRegistro(); 
+                    document.getElementById('formMascota').reset(); 
+                    document.getElementById('fileChosenName').textContent = 'Ninguna foto seleccionada'; 
+                    document.getElementById('previewContainer').style.display = 'none';
+                    cargarMascotasNube(); 
+                }
+            };
+            reader.readAsDataURL(archivoInput.files[0]);
+        }
+    }
+
+    function copiarEnlace(inputId) {
+        const input = document.getElementById(inputId || 'refLink');
+        input.select();
+        navigator.clipboard.writeText(input.value);
+        alert('¡Enlace de referido copiado al portapapeles!');
+    }
+
+    window.onload = () => {
+        verificarSesion();
+        comprobarPaisExpansion();
+        cargarMascotasNube();
+        verificarEstadoSuscripcionYAlertas();
+        verificarAlertasVetAlCargar();
+        renderizarControlesVet();
+    };
+</script>
+</body>
+</html>
