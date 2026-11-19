@@ -1,0 +1,70 @@
+/* ===================================================================== */
+/* ARCHIVO CENTRALIZADO DE PAGOS PARA TODO PETMATCH (index y tienda)     */
+/* Modifica tus datos aquí y se actualizarán automáticamente en ambos.   */
+/* ===================================================================== */
+
+const CONFIG_PAGOS = {
+    // 1. Links de cobro con Tarjeta de Débito / Crédito (PayPhone, PlacetoPay, Kushki, etc.)
+    linkPagoTarjetaPro: '',     // Link de cobro por $5.00 USD para Membresía Nivel Pro
+    linkPagoTarjetaTienda: '',  // Link de cobro abierto o de pasarela para la Tienda
+
+    // 2. Datos de tu cuenta bancaria para Transferencias y Depósitos
+    banco: 'Banco Pichincha',
+    tipoCuenta: 'Cuenta de Ahorros',
+    numeroCuenta: '2207547649',
+    titular: 'Maria Augusta Mena',
+    cedula: '1714194709',
+
+    // 3. WhatsApp donde recibirás los comprobantes de pago
+    whatsappComprobantes: '593999140028'
+};
+
+// Rellena automáticamente los datos bancarios en cualquier página que tenga estos IDs
+function inicializarDatosBancariosUI() {
+    const elBanco = document.getElementById('uiBancoNombre');
+    const elTipo = document.getElementById('uiBancoTipo');
+    const elNumero = document.getElementById('uiBancoNumero');
+    const elTitular = document.getElementById('uiBancoTitular');
+    const elCedula = document.getElementById('uiBancoCedula');
+
+    if (elBanco) elBanco.textContent = CONFIG_PAGOS.banco;
+    if (elTipo) elTipo.textContent = CONFIG_PAGOS.tipoCuenta;
+    if (elNumero) elNumero.textContent = CONFIG_PAGOS.numeroCuenta;
+    if (elTitular) elTitular.textContent = CONFIG_PAGOS.titular;
+    if (elCedula) elCedula.textContent = CONFIG_PAGOS.cedula;
+
+    // Botón de comprobante para Membresía Pro (index.html)
+    const btnComprobantePro = document.getElementById('btnEnviarComprobantePro');
+    if (btnComprobantePro) {
+        const correoUser = (typeof currentUser !== 'undefined' && currentUser) ? ` (${currentUser.email})` : '';
+        const textoWa = encodeURIComponent(`Hola, adjunto mi comprobante de transferencia bancaria de $5.00 USD para activar mi membresía Nivel Pro en PetMatch${correoUser}.`);
+        btnComprobantePro.href = `https://wa.me/${CONFIG_PAGOS.whatsappComprobantes}?text=${textoWa}`;
+    }
+}
+
+// Copia el número de cuenta al portapapeles desde cualquier página
+function copiarDatosBancarios() {
+    navigator.clipboard.writeText(CONFIG_PAGOS.numeroCuenta);
+    alert(`✅ Número de cuenta copiado: ${CONFIG_PAGOS.numeroCuenta}\n(${CONFIG_PAGOS.banco} - ${CONFIG_PAGOS.tipoCuenta})`);
+}
+
+// Abre el pago con tarjeta para Membresía Pro (index.html)
+function abrirPagoTarjetaPro() {
+    if (CONFIG_PAGOS.linkPagoTarjetaPro && CONFIG_PAGOS.linkPagoTarjetaPro.startsWith('http')) {
+        window.open(CONFIG_PAGOS.linkPagoTarjetaPro, '_blank');
+    } else {
+        const correoUser = (typeof currentUser !== 'undefined' && currentUser) ? ` (${currentUser.email})` : '';
+        const msgWa = encodeURIComponent(`Hola, deseo el link de pago con Tarjeta de Débito/Crédito ($5.00 USD) para activar mi membresía Nivel Pro en PetMatch${correoUser}.`);
+        window.open(`https://wa.me/${CONFIG_PAGOS.whatsappComprobantes}?text=${msgWa}`, '_blank');
+    }
+}
+
+// Abre el pago con tarjeta para pedidos de la Tienda (tienda.html)
+function abrirPagoTarjetaTienda(totalPedido, detalleProductos) {
+    if (CONFIG_PAGOS.linkPagoTarjetaTienda && CONFIG_PAGOS.linkPagoTarjetaTienda.startsWith('http')) {
+        window.open(CONFIG_PAGOS.linkPagoTarjetaTienda, '_blank');
+    } else {
+        const msgWa = encodeURIComponent(`Hola, deseo pagar con Tarjeta de Débito/Crédito mi pedido en PetMatch Tienda por $${totalPedido}.\nDetalle:\n${detalleProductos}`);
+        window.open(`https://wa.me/${CONFIG_PAGOS.whatsappComprobantes}?text=${msgWa}`, '_blank');
+    }
+}
